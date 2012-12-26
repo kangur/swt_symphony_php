@@ -58,3 +58,14 @@ swiftmailer:
     username:  "%mailer_user%"
     password:  "%mailer_password%"
     spool:     { type: memory }
+
+propel:
+    path:       "%kernel.root_dir%/../vendor/propel"
+    phing_path: "%kernel.root_dir%/../vendor/phing"
+    dbal:
+        driver:               mysql
+        user:                 symfony
+        password:             web
+        dsn:                  mysql:host=localhost;dbname=symfony;charset=UTF8
+        options:              {}
+        attributes:           {}

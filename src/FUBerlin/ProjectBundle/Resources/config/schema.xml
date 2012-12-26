@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<database name="default" namespace="FUBerlin\ProjectBundle\Model" defaultIdMethod="native">
+
+    <table name="user">
+        <column name="id" type="integer" required="true" primaryKey="true" autoIncrement="true" />
+        <column name="username" type="varchar" size="100" />
+        <column name="first_name" type="varchar" size="100" />
+        <column name="last_name" type="varchar" size="100" />
+        <column name="email" type="varchar" size="100" />
+        <column name="password" type="varchar" size="100" />
+        <unique>
+            <unique-column name="email" />  
+        </unique>
+    </table>
+    
+
+</database>
