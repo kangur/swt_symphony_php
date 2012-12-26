@@ -1,6 +1,6 @@
-{% extends '::base.html.twig' %}
+{% extends 'FUBerlinProjectBundle::base.html.twig' %}
 
-{% block body %}
+{% block content %}
 
 <form action="{{ path('register') }}" method="post" {{ form_enctype(form) }}>
     {{ form_widget(form) }}

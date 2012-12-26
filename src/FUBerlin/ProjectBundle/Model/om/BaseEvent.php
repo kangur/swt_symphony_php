@@ -16,25 +16,25 @@ use \PropelPDO;
 use FUBerlin\ProjectBundle\Model\Event;
 use FUBerlin\ProjectBundle\Model\EventMember;
 use FUBerlin\ProjectBundle\Model\EventMemberQuery;
+use FUBerlin\ProjectBundle\Model\EventPeer;
 use FUBerlin\ProjectBundle\Model\EventPosition;
 use FUBerlin\ProjectBundle\Model\EventPositionQuery;
 use FUBerlin\ProjectBundle\Model\EventQuery;
 use FUBerlin\ProjectBundle\Model\User;
-use FUBerlin\ProjectBundle\Model\UserPeer;
 use FUBerlin\ProjectBundle\Model\UserQuery;
 
-abstract class BaseUser extends BaseObject implements Persistent
+abstract class BaseEvent extends BaseObject implements Persistent
 {
     /**
      * Peer class name
      */
-    const PEER = 'FUBerlin\\ProjectBundle\\Model\\UserPeer';
+    const PEER = 'FUBerlin\\ProjectBundle\\Model\\EventPeer';
 
     /**
      * The Peer class.
      * Instance provides a convenient way of calling static methods on a class
      * that calling code may not be able to identify.
-     * @var        UserPeer
+     * @var        EventPeer
      */
     protected static $peer;
 
@@ -51,40 +51,40 @@ abstract class BaseUser extends BaseObject implements Persistent
     protected $id;
 
     /**
-     * The value for the username field.
-     * @var        string
+     * The value for the owner_id field.
+     * @var        int
      */
-    protected $username;
+    protected $owner_id;
 
     /**
-     * The value for the first_name field.
+     * The value for the title field.
      * @var        string
      */
-    protected $first_name;
+    protected $title;
 
     /**
-     * The value for the last_name field.
+     * The value for the place field.
      * @var        string
      */
-    protected $last_name;
+    protected $place;
 
     /**
-     * The value for the email field.
-     * @var        string
+     * The value for the require_receipt field.
+     * @var        boolean
      */
-    protected $email;
+    protected $require_receipt;
 
     /**
-     * The value for the password field.
-     * @var        string
+     * The value for the billed field.
+     * Note: this column has a database default value of: false
+     * @var        boolean
      */
-    protected $password;
+    protected $billed;
 
     /**
-     * @var        PropelObjectCollection|Event[] Collection to store aggregation of Event objects.
+     * @var        User
      */
-    protected $collEventOwners;
-    protected $collEventOwnersPartial;
+    protected $aOwnerUser;
 
     /**
      * @var        PropelObjectCollection|EventMember[] Collection to store aggregation of EventMember objects.
@@ -99,9 +99,9 @@ abstract class BaseUser extends BaseObject implements Persistent
     protected $collEventPositionsPartial;
 
     /**
-     * @var        PropelObjectCollection|Event[] Collection to store aggregation of Event objects.
+     * @var        PropelObjectCollection|User[] Collection to store aggregation of User objects.
      */
-    protected $collEvents;
+    protected $collMemberUsers;
 
     /**
      * Flag to prevent endless save loop, if this object is referenced
@@ -121,13 +121,7 @@ abstract class BaseUser extends BaseObject implements Persistent
      * An array of objects scheduled for deletion.
      * @var		PropelObjectCollection
      */
-    protected $eventsScheduledForDeletion = null;
-
-    /**
-     * An array of objects scheduled for deletion.
-     * @var		PropelObjectCollection
-     */
-    protected $eventOwnersScheduledForDeletion = null;
+    protected $memberUsersScheduledForDeletion = null;
 
     /**
      * An array of objects scheduled for deletion.
@@ -142,6 +136,27 @@ abstract class BaseUser extends BaseObject implements Persistent
     protected $eventPositionsScheduledForDeletion = null;
 
     /**
+     * Applies default values to this object.
+     * This method should be called from the object's constructor (or
+     * equivalent initialization method).
+     * @see        __construct()
+     */
+    public function applyDefaultValues()
+    {
+        $this->billed = false;
+    }
+
+    /**
+     * Initializes internal state of BaseEvent object.
+     * @see        applyDefaults()
+     */
+    public function __construct()
+    {
+        parent::__construct();
+        $this->applyDefaultValues();
+    }
+
+    /**
      * Get the [id] column value.
      *
      * @return int
@@ -152,60 +167,60 @@ abstract class BaseUser extends BaseObject implements Persistent
     }
 
     /**
-     * Get the [username] column value.
+     * Get the [owner_id] column value.
      *
-     * @return string
+     * @return int
      */
-    public function getUsername()
+    public function getOwnerId()
     {
-        return $this->username;
+        return $this->owner_id;
     }
 
     /**
-     * Get the [first_name] column value.
+     * Get the [title] column value.
      *
      * @return string
      */
-    public function getFirstName()
+    public function getTitle()
     {
-        return $this->first_name;
+        return $this->title;
     }
 
     /**
-     * Get the [last_name] column value.
+     * Get the [place] column value.
      *
      * @return string
      */
-    public function getLastName()
+    public function getPlace()
     {
-        return $this->last_name;
+        return $this->place;
     }
 
     /**
-     * Get the [email] column value.
+     * Get the [require_receipt] column value.
      *
-     * @return string
+     * @return boolean
      */
-    public function getEmail()
+    public function getRequireReceipt()
     {
-        return $this->email;
+        return $this->require_receipt;
     }
 
     /**
-     * Get the [password] column value.
+     * Get the [billed] column value.
      *
-     * @return string
+     * @return boolean
      */
-    public function getPassword()
+    public function getBilled()
     {
-        return $this->password;
+        return $this->billed;
     }
 
     /**
      * Set the value of [id] column.
      *
      * @param int $v new value
-     * @return User The current object (for fluent API support)
+     * @return Event The current object (for fluent API support)
      */
     public function setId($v)
     {
@@ -215,7 +230,7 @@ abstract class BaseUser extends BaseObject implements Persistent
 
         if ($this->id !== $v) {
             $this->id = $v;
-            $this->modifiedColumns[] = UserPeer::ID;
+            $this->modifiedColumns[] = EventPeer::ID;
         }
 
 
@@ -223,109 +238,129 @@ abstract class BaseUser extends BaseObject implements Persistent
     } // setId()
 
     /**
-     * Set the value of [username] column.
+     * Set the value of [owner_id] column.
      *
-     * @param string $v new value
-     * @return User The current object (for fluent API support)
+     * @param int $v new value
+     * @return Event The current object (for fluent API support)
      */
-    public function setUsername($v)
+    public function setOwnerId($v)
     {
         if ($v !== null) {
-            $v = (string) $v;
+            $v = (int) $v;
         }
 
-        if ($this->username !== $v) {
-            $this->username = $v;
-            $this->modifiedColumns[] = UserPeer::USERNAME;
+        if ($this->owner_id !== $v) {
+            $this->owner_id = $v;
+            $this->modifiedColumns[] = EventPeer::OWNER_ID;
+        }
+
+        if ($this->aOwnerUser !== null && $this->aOwnerUser->getId() !== $v) {
+            $this->aOwnerUser = null;
         }
 
 
         return $this;
-    } // setUsername()
+    } // setOwnerId()
 
     /**
-     * Set the value of [first_name] column.
+     * Set the value of [title] column.
      *
      * @param string $v new value
-     * @return User The current object (for fluent API support)
+     * @return Event The current object (for fluent API support)
      */
-    public function setFirstName($v)
+    public function setTitle($v)
     {
         if ($v !== null) {
             $v = (string) $v;
         }
 
-        if ($this->first_name !== $v) {
-            $this->first_name = $v;
-            $this->modifiedColumns[] = UserPeer::FIRST_NAME;
+        if ($this->title !== $v) {
+            $this->title = $v;
+            $this->modifiedColumns[] = EventPeer::TITLE;
         }
 
 
         return $this;
-    } // setFirstName()
+    } // setTitle()
 
     /**
-     * Set the value of [last_name] column.
+     * Set the value of [place] column.
      *
      * @param string $v new value
-     * @return User The current object (for fluent API support)
+     * @return Event The current object (for fluent API support)
      */
-    public function setLastName($v)
+    public function setPlace($v)
     {
         if ($v !== null) {
             $v = (string) $v;
         }
 
-        if ($this->last_name !== $v) {
-            $this->last_name = $v;
-            $this->modifiedColumns[] = UserPeer::LAST_NAME;
+        if ($this->place !== $v) {
+            $this->place = $v;
+            $this->modifiedColumns[] = EventPeer::PLACE;
         }
 
 
         return $this;
-    } // setLastName()
+    } // setPlace()
 
     /**
-     * Set the value of [email] column.
+     * Sets the value of the [require_receipt] column.
+     * Non-boolean arguments are converted using the following rules:
+     *   * 1, '1', 'true',  'on',  and 'yes' are converted to boolean true
+     *   * 0, '0', 'false', 'off', and 'no'  are converted to boolean false
+     * Check on string values is case insensitive (so 'FaLsE' is seen as 'false').
      *
-     * @param string $v new value
-     * @return User The current object (for fluent API support)
+     * @param boolean|integer|string $v The new value
+     * @return Event The current object (for fluent API support)
      */
-    public function setEmail($v)
+    public function setRequireReceipt($v)
     {
         if ($v !== null) {
-            $v = (string) $v;
+            if (is_string($v)) {
+                $v = in_array(strtolower($v), array('false', 'off', '-', 'no', 'n', '0', '')) ? false : true;
+            } else {
+                $v = (boolean) $v;
+            }
         }
 
-        if ($this->email !== $v) {
-            $this->email = $v;
-            $this->modifiedColumns[] = UserPeer::EMAIL;
+        if ($this->require_receipt !== $v) {
+            $this->require_receipt = $v;
+            $this->modifiedColumns[] = EventPeer::REQUIRE_RECEIPT;
         }
 
 
         return $this;
-    } // setEmail()
+    } // setRequireReceipt()
 
     /**
-     * Set the value of [password] column.
+     * Sets the value of the [billed] column.
+     * Non-boolean arguments are converted using the following rules:
+     *   * 1, '1', 'true',  'on',  and 'yes' are converted to boolean true
+     *   * 0, '0', 'false', 'off', and 'no'  are converted to boolean false
+     * Check on string values is case insensitive (so 'FaLsE' is seen as 'false').
      *
-     * @param string $v new value
-     * @return User The current object (for fluent API support)
+     * @param boolean|integer|string $v The new value
+     * @return Event The current object (for fluent API support)
      */
-    public function setPassword($v)
+    public function setBilled($v)
     {
         if ($v !== null) {
-            $v = (string) $v;
+            if (is_string($v)) {
+                $v = in_array(strtolower($v), array('false', 'off', '-', 'no', 'n', '0', '')) ? false : true;
+            } else {
+                $v = (boolean) $v;
+            }
         }
 
-        if ($this->password !== $v) {
-            $this->password = $v;
-            $this->modifiedColumns[] = UserPeer::PASSWORD;
+        if ($this->billed !== $v) {
+            $this->billed = $v;
+            $this->modifiedColumns[] = EventPeer::BILLED;
         }
 
 
         return $this;
-    } // setPassword()
+    } // setBilled()
 
     /**
      * Indicates whether the columns in this object are only set to default values.
@@ -337,6 +372,10 @@ abstract class BaseUser extends BaseObject implements Persistent
      */
     public function hasOnlyDefaultValues()
     {
+            if ($this->billed !== false) {
+                return false;
+            }
+
         // otherwise, everything was equal, so return true
         return true;
     } // hasOnlyDefaultValues()
@@ -360,11 +399,11 @@ abstract class BaseUser extends BaseObject implements Persistent
         try {
 
             $this->id = ($row[$startcol + 0] !== null) ? (int) $row[$startcol + 0] : null;
-            $this->username = ($row[$startcol + 1] !== null) ? (string) $row[$startcol + 1] : null;
-            $this->first_name = ($row[$startcol + 2] !== null) ? (string) $row[$startcol + 2] : null;
-            $this->last_name = ($row[$startcol + 3] !== null) ? (string) $row[$startcol + 3] : null;
-            $this->email = ($row[$startcol + 4] !== null) ? (string) $row[$startcol + 4] : null;
-            $this->password = ($row[$startcol + 5] !== null) ? (string) $row[$startcol + 5] : null;
+            $this->owner_id = ($row[$startcol + 1] !== null) ? (int) $row[$startcol + 1] : null;
+            $this->title = ($row[$startcol + 2] !== null) ? (string) $row[$startcol + 2] : null;
+            $this->place = ($row[$startcol + 3] !== null) ? (string) $row[$startcol + 3] : null;
+            $this->require_receipt = ($row[$startcol + 4] !== null) ? (boolean) $row[$startcol + 4] : null;
+            $this->billed = ($row[$startcol + 5] !== null) ? (boolean) $row[$startcol + 5] : null;
             $this->resetModified();
 
             $this->setNew(false);
@@ -373,10 +412,10 @@ abstract class BaseUser extends BaseObject implements Persistent
                 $this->ensureConsistency();
             }
 
-            return $startcol + 6; // 6 = UserPeer::NUM_HYDRATE_COLUMNS.
+            return $startcol + 6; // 6 = EventPeer::NUM_HYDRATE_COLUMNS.
 
         } catch (Exception $e) {
-            throw new PropelException("Error populating User object", $e);
+            throw new PropelException("Error populating Event object", $e);
         }
     }
 
@@ -396,6 +435,9 @@ abstract class BaseUser extends BaseObject implements Persistent
     public function ensureConsistency()
     {
 
+        if ($this->aOwnerUser !== null && $this->owner_id !== $this->aOwnerUser->getId()) {
+            $this->aOwnerUser = null;
+        }
     } // ensureConsistency
 
     /**
@@ -419,13 +461,13 @@ abstract class BaseUser extends BaseObject implements Persistent
         }
 
         if ($con === null) {
-            $con = Propel::getConnection(UserPeer::DATABASE_NAME, Propel::CONNECTION_READ);
+            $con = Propel::getConnection(EventPeer::DATABASE_NAME, Propel::CONNECTION_READ);
         }
 
         // We don't need to alter the object instance pool; we're just modifying this instance
         // already in the pool.
 
-        $stmt = UserPeer::doSelectStmt($this->buildPkeyCriteria(), $con);
+        $stmt = EventPeer::doSelectStmt($this->buildPkeyCriteria(), $con);
         $row = $stmt->fetch(PDO::FETCH_NUM);
         $stmt->closeCursor();
         if (!$row) {
@@ -435,13 +477,12 @@ abstract class BaseUser extends BaseObject implements Persistent
 
         if ($deep) {  // also de-associate any related objects?
 
-            $this->collEventOwners = null;
-
+            $this->aOwnerUser = null;
             $this->collEventMembers = null;
 
             $this->collEventPositions = null;
 
-            $this->collEvents = null;
+            $this->collMemberUsers = null;
         } // if (deep)
     }
 
@@ -462,12 +503,12 @@ abstract class BaseUser extends BaseObject implements Persistent
         }
 
         if ($con === null) {
-            $con = Propel::getConnection(UserPeer::DATABASE_NAME, Propel::CONNECTION_WRITE);
+            $con = Propel::getConnection(EventPeer::DATABASE_NAME, Propel::CONNECTION_WRITE);
         }
 
         $con->beginTransaction();
         try {
-            $deleteQuery = UserQuery::create()
+            $deleteQuery = EventQuery::create()
                 ->filterByPrimaryKey($this->getPrimaryKey());
             $ret = $this->preDelete($con);
             if ($ret) {
@@ -505,7 +546,7 @@ abstract class BaseUser extends BaseObject implements Persistent
         }
 
         if ($con === null) {
-            $con = Propel::getConnection(UserPeer::DATABASE_NAME, Propel::CONNECTION_WRITE);
+            $con = Propel::getConnection(EventPeer::DATABASE_NAME, Propel::CONNECTION_WRITE);
         }
 
         $con->beginTransaction();
@@ -525,7 +566,7 @@ abstract class BaseUser extends BaseObject implements Persistent
                     $this->postUpdate($con);
                 }
                 $this->postSave($con);
-                UserPeer::addInstanceToPool($this);
+                EventPeer::addInstanceToPool($this);
             } else {
                 $affectedRows = 0;
             }
@@ -555,6 +596,18 @@ abstract class BaseUser extends BaseObject implements Persistent
         if (!$this->alreadyInSave) {
             $this->alreadyInSave = true;
 
+            // We call the save method on the following object(s) if they
+            // were passed to this object by their coresponding set
+            // method.  This object relates to these object(s) by a
+            // foreign key reference.
+
+            if ($this->aOwnerUser !== null) {
+                if ($this->aOwnerUser->isModified() || $this->aOwnerUser->isNew()) {
+                    $affectedRows += $this->aOwnerUser->save($con);
+                }
+                $this->setOwnerUser($this->aOwnerUser);
+            }
+
             if ($this->isNew() || $this->isModified()) {
                 // persist changes
                 if ($this->isNew()) {
@@ -566,40 +619,22 @@ abstract class BaseUser extends BaseObject implements Persistent
                 $this->resetModified();
             }
 
-            if ($this->eventsScheduledForDeletion !== null) {
-                if (!$this->eventsScheduledForDeletion->isEmpty()) {
+            if ($this->memberUsersScheduledForDeletion !== null) {
+                if (!$this->memberUsersScheduledForDeletion->isEmpty()) {
                     $pks = array();
                     $pk = $this->getPrimaryKey();
-                    foreach ($this->eventsScheduledForDeletion->getPrimaryKeys(false) as $remotePk) {
-                        $pks[] = array($pk, $remotePk);
+                    foreach ($this->memberUsersScheduledForDeletion->getPrimaryKeys(false) as $remotePk) {
+                        $pks[] = array($remotePk, $pk);
                     }
                     EventMemberQuery::create()
                         ->filterByPrimaryKeys($pks)
                         ->delete($con);
-                    $this->eventsScheduledForDeletion = null;
+                    $this->memberUsersScheduledForDeletion = null;
                 }
 
-                foreach ($this->getEvents() as $event) {
-                    if ($event->isModified()) {
-                        $event->save($con);
-                    }
-                }
-            }
-
-            if ($this->eventOwnersScheduledForDeletion !== null) {
-                if (!$this->eventOwnersScheduledForDeletion->isEmpty()) {
-                    foreach ($this->eventOwnersScheduledForDeletion as $eventOwner) {
-                        // need to save related object because we set the relation to null
-                        $eventOwner->save($con);
-                    }
-                    $this->eventOwnersScheduledForDeletion = null;
-                }
-            }
-
-            if ($this->collEventOwners !== null) {
-                foreach ($this->collEventOwners as $referrerFK) {
-                    if (!$referrerFK->isDeleted()) {
-                        $affectedRows += $referrerFK->save($con);
+                foreach ($this->getMemberUsers() as $memberUser) {
+                    if ($memberUser->isModified()) {
+                        $memberUser->save($con);
                     }
                 }
             }
@@ -658,33 +693,33 @@ abstract class BaseUser extends BaseObject implements Persistent
         $modifiedColumns = array();
         $index = 0;
 
-        $this->modifiedColumns[] = UserPeer::ID;
+        $this->modifiedColumns[] = EventPeer::ID;
         if (null !== $this->id) {
-            throw new PropelException('Cannot insert a value for auto-increment primary key (' . UserPeer::ID . ')');
+            throw new PropelException('Cannot insert a value for auto-increment primary key (' . EventPeer::ID . ')');
         }
 
          // check the columns in natural order for more readable SQL queries
-        if ($this->isColumnModified(UserPeer::ID)) {
+        if ($this->isColumnModified(EventPeer::ID)) {
             $modifiedColumns[':p' . $index++]  = '`ID`';
         }
-        if ($this->isColumnModified(UserPeer::USERNAME)) {
-            $modifiedColumns[':p' . $index++]  = '`USERNAME`';
+        if ($this->isColumnModified(EventPeer::OWNER_ID)) {
+            $modifiedColumns[':p' . $index++]  = '`OWNER_ID`';
         }
-        if ($this->isColumnModified(UserPeer::FIRST_NAME)) {
-            $modifiedColumns[':p' . $index++]  = '`FIRST_NAME`';
+        if ($this->isColumnModified(EventPeer::TITLE)) {
+            $modifiedColumns[':p' . $index++]  = '`TITLE`';
         }
-        if ($this->isColumnModified(UserPeer::LAST_NAME)) {
-            $modifiedColumns[':p' . $index++]  = '`LAST_NAME`';
+        if ($this->isColumnModified(EventPeer::PLACE)) {
+            $modifiedColumns[':p' . $index++]  = '`PLACE`';
         }
-        if ($this->isColumnModified(UserPeer::EMAIL)) {
-            $modifiedColumns[':p' . $index++]  = '`EMAIL`';
+        if ($this->isColumnModified(EventPeer::REQUIRE_RECEIPT)) {
+            $modifiedColumns[':p' . $index++]  = '`REQUIRE_RECEIPT`';
         }
-        if ($this->isColumnModified(UserPeer::PASSWORD)) {
-            $modifiedColumns[':p' . $index++]  = '`PASSWORD`';
+        if ($this->isColumnModified(EventPeer::BILLED)) {
+            $modifiedColumns[':p' . $index++]  = '`BILLED`';
         }
 
         $sql = sprintf(
-            'INSERT INTO `user` (%s) VALUES (%s)',
+            'INSERT INTO `event` (%s) VALUES (%s)',
             implode(', ', $modifiedColumns),
             implode(', ', array_keys($modifiedColumns))
         );
@@ -696,20 +731,20 @@ abstract class BaseUser extends BaseObject implements Persistent
                     case '`ID`':
                         $stmt->bindValue($identifier, $this->id, PDO::PARAM_INT);
                         break;
-                    case '`USERNAME`':
-                        $stmt->bindValue($identifier, $this->username, PDO::PARAM_STR);
+                    case '`OWNER_ID`':
+                        $stmt->bindValue($identifier, $this->owner_id, PDO::PARAM_INT);
                         break;
-                    case '`FIRST_NAME`':
-                        $stmt->bindValue($identifier, $this->first_name, PDO::PARAM_STR);
+                    case '`TITLE`':
+                        $stmt->bindValue($identifier, $this->title, PDO::PARAM_STR);
                         break;
-                    case '`LAST_NAME`':
-                        $stmt->bindValue($identifier, $this->last_name, PDO::PARAM_STR);
+                    case '`PLACE`':
+                        $stmt->bindValue($identifier, $this->place, PDO::PARAM_STR);
                         break;
-                    case '`EMAIL`':
-                        $stmt->bindValue($identifier, $this->email, PDO::PARAM_STR);
+                    case '`REQUIRE_RECEIPT`':
+                        $stmt->bindValue($identifier, (int) $this->require_receipt, PDO::PARAM_INT);
                         break;
-                    case '`PASSWORD`':
-                        $stmt->bindValue($identifier, $this->password, PDO::PARAM_STR);
+                    case '`BILLED`':
+                        $stmt->bindValue($identifier, (int) $this->billed, PDO::PARAM_INT);
                         break;
                 }
             }
@@ -805,18 +840,22 @@ abstract class BaseUser extends BaseObject implements Persistent
             $failureMap = array();
 
 
-            if (($retval = UserPeer::doValidate($this, $columns)) !== true) {
-                $failureMap = array_merge($failureMap, $retval);
+            // We call the validate method on the following object(s) if they
+            // were passed to this object by their coresponding set
+            // method.  This object relates to these object(s) by a
+            // foreign key reference.
+
+            if ($this->aOwnerUser !== null) {
+                if (!$this->aOwnerUser->validate($columns)) {
+                    $failureMap = array_merge($failureMap, $this->aOwnerUser->getValidationFailures());
+                }
             }
 
 
-                if ($this->collEventOwners !== null) {
-                    foreach ($this->collEventOwners as $referrerFK) {
-                        if (!$referrerFK->validate($columns)) {
-                            $failureMap = array_merge($failureMap, $referrerFK->getValidationFailures());
-                        }
-                    }
-                }
+            if (($retval = EventPeer::doValidate($this, $columns)) !== true) {
+                $failureMap = array_merge($failureMap, $retval);
+            }
+
 
                 if ($this->collEventMembers !== null) {
                     foreach ($this->collEventMembers as $referrerFK) {
@@ -853,7 +892,7 @@ abstract class BaseUser extends BaseObject implements Persistent
      */
     public function getByName($name, $type = BasePeer::TYPE_PHPNAME)
     {
-        $pos = UserPeer::translateFieldName($name, $type, BasePeer::TYPE_NUM);
+        $pos = EventPeer::translateFieldName($name, $type, BasePeer::TYPE_NUM);
         $field = $this->getByPosition($pos);
 
         return $field;
@@ -873,19 +912,19 @@ abstract class BaseUser extends BaseObject implements Persistent
                 return $this->getId();
                 break;
             case 1:
-                return $this->getUsername();
+                return $this->getOwnerId();
                 break;
             case 2:
-                return $this->getFirstName();
+                return $this->getTitle();
                 break;
             case 3:
-                return $this->getLastName();
+                return $this->getPlace();
                 break;
             case 4:
-                return $this->getEmail();
+                return $this->getRequireReceipt();
                 break;
             case 5:
-                return $this->getPassword();
+                return $this->getBilled();
                 break;
             default:
                 return null;
@@ -910,22 +949,22 @@ abstract class BaseUser extends BaseObject implements Persistent
      */
     public function toArray($keyType = BasePeer::TYPE_PHPNAME, $includeLazyLoadColumns = true, $alreadyDumpedObjects = array(), $includeForeignObjects = false)
     {
-        if (isset($alreadyDumpedObjects['User'][$this->getPrimaryKey()])) {
+        if (isset($alreadyDumpedObjects['Event'][$this->getPrimaryKey()])) {
             return '*RECURSION*';
         }
-        $alreadyDumpedObjects['User'][$this->getPrimaryKey()] = true;
-        $keys = UserPeer::getFieldNames($keyType);
+        $alreadyDumpedObjects['Event'][$this->getPrimaryKey()] = true;
+        $keys = EventPeer::getFieldNames($keyType);
         $result = array(
             $keys[0] => $this->getId(),
-            $keys[1] => $this->getUsername(),
-            $keys[2] => $this->getFirstName(),
-            $keys[3] => $this->getLastName(),
-            $keys[4] => $this->getEmail(),
-            $keys[5] => $this->getPassword(),
+            $keys[1] => $this->getOwnerId(),
+            $keys[2] => $this->getTitle(),
+            $keys[3] => $this->getPlace(),
+            $keys[4] => $this->getRequireReceipt(),
+            $keys[5] => $this->getBilled(),
         );
         if ($includeForeignObjects) {
-            if (null !== $this->collEventOwners) {
-                $result['EventOwners'] = $this->collEventOwners->toArray(null, true, $keyType, $includeLazyLoadColumns, $alreadyDumpedObjects);
+            if (null !== $this->aOwnerUser) {
+                $result['OwnerUser'] = $this->aOwnerUser->toArray($keyType, $includeLazyLoadColumns,  $alreadyDumpedObjects, true);
             }
             if (null !== $this->collEventMembers) {
                 $result['EventMembers'] = $this->collEventMembers->toArray(null, true, $keyType, $includeLazyLoadColumns, $alreadyDumpedObjects);
@@ -951,7 +990,7 @@ abstract class BaseUser extends BaseObject implements Persistent
      */
     public function setByName($name, $value, $type = BasePeer::TYPE_PHPNAME)
     {
-        $pos = UserPeer::translateFieldName($name, $type, BasePeer::TYPE_NUM);
+        $pos = EventPeer::translateFieldName($name, $type, BasePeer::TYPE_NUM);
 
         $this->setByPosition($pos, $value);
     }
@@ -971,19 +1010,19 @@ abstract class BaseUser extends BaseObject implements Persistent
                 $this->setId($value);
                 break;
             case 1:
-                $this->setUsername($value);
+                $this->setOwnerId($value);
                 break;
             case 2:
-                $this->setFirstName($value);
+                $this->setTitle($value);
                 break;
             case 3:
-                $this->setLastName($value);
+                $this->setPlace($value);
                 break;
             case 4:
-                $this->setEmail($value);
+                $this->setRequireReceipt($value);
                 break;
             case 5:
-                $this->setPassword($value);
+                $this->setBilled($value);
                 break;
         } // switch()
     }
@@ -1007,14 +1046,14 @@ abstract class BaseUser extends BaseObject implements Persistent
      */
     public function fromArray($arr, $keyType = BasePeer::TYPE_PHPNAME)
     {
-        $keys = UserPeer::getFieldNames($keyType);
+        $keys = EventPeer::getFieldNames($keyType);
 
         if (array_key_exists($keys[0], $arr)) $this->setId($arr[$keys[0]]);
-        if (array_key_exists($keys[1], $arr)) $this->setUsername($arr[$keys[1]]);
-        if (array_key_exists($keys[2], $arr)) $this->setFirstName($arr[$keys[2]]);
-        if (array_key_exists($keys[3], $arr)) $this->setLastName($arr[$keys[3]]);
-        if (array_key_exists($keys[4], $arr)) $this->setEmail($arr[$keys[4]]);
-        if (array_key_exists($keys[5], $arr)) $this->setPassword($arr[$keys[5]]);
+        if (array_key_exists($keys[1], $arr)) $this->setOwnerId($arr[$keys[1]]);
+        if (array_key_exists($keys[2], $arr)) $this->setTitle($arr[$keys[2]]);
+        if (array_key_exists($keys[3], $arr)) $this->setPlace($arr[$keys[3]]);
+        if (array_key_exists($keys[4], $arr)) $this->setRequireReceipt($arr[$keys[4]]);
+        if (array_key_exists($keys[5], $arr)) $this->setBilled($arr[$keys[5]]);
     }
 
     /**
@@ -1024,14 +1063,14 @@ abstract class BaseUser extends BaseObject implements Persistent
      */
     public function buildCriteria()
     {
-        $criteria = new Criteria(UserPeer::DATABASE_NAME);
+        $criteria = new Criteria(EventPeer::DATABASE_NAME);
 
-        if ($this->isColumnModified(UserPeer::ID)) $criteria->add(UserPeer::ID, $this->id);
-        if ($this->isColumnModified(UserPeer::USERNAME)) $criteria->add(UserPeer::USERNAME, $this->username);
-        if ($this->isColumnModified(UserPeer::FIRST_NAME)) $criteria->add(UserPeer::FIRST_NAME, $this->first_name);
-        if ($this->isColumnModified(UserPeer::LAST_NAME)) $criteria->add(UserPeer::LAST_NAME, $this->last_name);
-        if ($this->isColumnModified(UserPeer::EMAIL)) $criteria->add(UserPeer::EMAIL, $this->email);
-        if ($this->isColumnModified(UserPeer::PASSWORD)) $criteria->add(UserPeer::PASSWORD, $this->password);
+        if ($this->isColumnModified(EventPeer::ID)) $criteria->add(EventPeer::ID, $this->id);
+        if ($this->isColumnModified(EventPeer::OWNER_ID)) $criteria->add(EventPeer::OWNER_ID, $this->owner_id);
+        if ($this->isColumnModified(EventPeer::TITLE)) $criteria->add(EventPeer::TITLE, $this->title);
+        if ($this->isColumnModified(EventPeer::PLACE)) $criteria->add(EventPeer::PLACE, $this->place);
+        if ($this->isColumnModified(EventPeer::REQUIRE_RECEIPT)) $criteria->add(EventPeer::REQUIRE_RECEIPT, $this->require_receipt);
+        if ($this->isColumnModified(EventPeer::BILLED)) $criteria->add(EventPeer::BILLED, $this->billed);
 
         return $criteria;
     }
@@ -1046,8 +1085,8 @@ abstract class BaseUser extends BaseObject implements Persistent
      */
     public function buildPkeyCriteria()
     {
-        $criteria = new Criteria(UserPeer::DATABASE_NAME);
-        $criteria->add(UserPeer::ID, $this->id);
+        $criteria = new Criteria(EventPeer::DATABASE_NAME);
+        $criteria->add(EventPeer::ID, $this->id);
 
         return $criteria;
     }
@@ -1088,18 +1127,18 @@ abstract class BaseUser extends BaseObject implements Persistent
      * If desired, this method can also make copies of all associated (fkey referrers)
      * objects.
      *
-     * @param object $copyObj An object of User (or compatible) type.
+     * @param object $copyObj An object of Event (or compatible) type.
      * @param boolean $deepCopy Whether to also copy all rows that refer (by fkey) to the current row.
      * @param boolean $makeNew Whether to reset autoincrement PKs and make the object new.
      * @throws PropelException
      */
     public function copyInto($copyObj, $deepCopy = false, $makeNew = true)
     {
-        $copyObj->setUsername($this->getUsername());
-        $copyObj->setFirstName($this->getFirstName());
-        $copyObj->setLastName($this->getLastName());
-        $copyObj->setEmail($this->getEmail());
-        $copyObj->setPassword($this->getPassword());
+        $copyObj->setOwnerId($this->getOwnerId());
+        $copyObj->setTitle($this->getTitle());
+        $copyObj->setPlace($this->getPlace());
+        $copyObj->setRequireReceipt($this->getRequireReceipt());
+        $copyObj->setBilled($this->getBilled());
 
         if ($deepCopy && !$this->startCopy) {
             // important: temporarily setNew(false) because this affects the behavior of
@@ -1107,12 +1146,6 @@ abstract class BaseUser extends BaseObject implements Persistent
             $copyObj->setNew(false);
             // store object hash to prevent cycle
             $this->startCopy = true;
-
-            foreach ($this->getEventOwners() as $relObj) {
-                if ($relObj !== $this) {  // ensure that we don't try to copy a reference to ourselves
-                    $copyObj->addEventOwner($relObj->copy($deepCopy));
-                }
-            }
 
             foreach ($this->getEventMembers() as $relObj) {
                 if ($relObj !== $this) {  // ensure that we don't try to copy a reference to ourselves
@@ -1145,7 +1178,7 @@ abstract class BaseUser extends BaseObject implements Persistent
      * objects.
      *
      * @param boolean $deepCopy Whether to also copy all rows that refer (by fkey) to the current row.
-     * @return User Clone of current object.
+     * @return Event Clone of current object.
      * @throws PropelException
      */
     public function copy($deepCopy = false)
@@ -1165,15 +1198,66 @@ abstract class BaseUser extends BaseObject implements Persistent
      * same instance for all member of this class. The method could therefore
      * be static, but this would prevent one from overriding the behavior.
      *
-     * @return UserPeer
+     * @return EventPeer
      */
     public function getPeer()
     {
         if (self::$peer === null) {
-            self::$peer = new UserPeer();
+            self::$peer = new EventPeer();
         }
 
         return self::$peer;
+    }
+
+    /**
+     * Declares an association between this object and a User object.
+     *
+     * @param             User $v
+     * @return Event The current object (for fluent API support)
+     * @throws PropelException
+     */
+    public function setOwnerUser(User $v = null)
+    {
+        if ($v === null) {
+            $this->setOwnerId(NULL);
+        } else {
+            $this->setOwnerId($v->getId());
+        }
+
+        $this->aOwnerUser = $v;
+
+        // Add binding for other direction of this n:n relationship.
+        // If this object has already been added to the User object, it will not be re-added.
+        if ($v !== null) {
+            $v->addEventOwner($this);
+        }
+
+
+        return $this;
+    }
+
+
+    /**
+     * Get the associated User object
+     *
+     * @param PropelPDO $con Optional Connection object.
+     * @return User The associated User object.
+     * @throws PropelException
+     */
+    public function getOwnerUser(PropelPDO $con = null)
+    {
+        if ($this->aOwnerUser === null && ($this->owner_id !== null)) {
+            $this->aOwnerUser = UserQuery::create()->findPk($this->owner_id, $con);
+            /* The following can be used additionally to
+                guarantee the related object contains a reference
+                to this object.  This level of coupling may, however, be
+                undesirable since it could result in an only partially populated collection
+                in the referenced object.
+                $this->aOwnerUser->addEventOwners($this);
+             */
+        }
+
+        return $this->aOwnerUser;
     }
 
 
@@ -1187,221 +1271,11 @@ abstract class BaseUser extends BaseObject implements Persistent
      */
     public function initRelation($relationName)
     {
-        if ('EventOwner' == $relationName) {
-            $this->initEventOwners();
-        }
         if ('EventMember' == $relationName) {
             $this->initEventMembers();
         }
         if ('EventPosition' == $relationName) {
             $this->initEventPositions();
-        }
-    }
-
-    /**
-     * Clears out the collEventOwners collection
-     *
-     * This does not modify the database; however, it will remove any associated objects, causing
-     * them to be refetched by subsequent calls to accessor method.
-     *
-     * @return void
-     * @see        addEventOwners()
-     */
-    public function clearEventOwners()
-    {
-        $this->collEventOwners = null; // important to set this to null since that means it is uninitialized
-        $this->collEventOwnersPartial = null;
-    }
-
-    /**
-     * reset is the collEventOwners collection loaded partially
-     *
-     * @return void
-     */
-    public function resetPartialEventOwners($v = true)
-    {
-        $this->collEventOwnersPartial = $v;
-    }
-
-    /**
-     * Initializes the collEventOwners collection.
-     *
-     * By default this just sets the collEventOwners collection to an empty array (like clearcollEventOwners());
-     * however, you may wish to override this method in your stub class to provide setting appropriate
-     * to your application -- for example, setting the initial array to the values stored in database.
-     *
-     * @param boolean $overrideExisting If set to true, the method call initializes
-     *                                        the collection even if it is not empty
-     *
-     * @return void
-     */
-    public function initEventOwners($overrideExisting = true)
-    {
-        if (null !== $this->collEventOwners && !$overrideExisting) {
-            return;
-        }
-        $this->collEventOwners = new PropelObjectCollection();
-        $this->collEventOwners->setModel('Event');
-    }
-
-    /**
-     * Gets an array of Event objects which contain a foreign key that references this object.
-     *
-     * If the $criteria is not null, it is used to always fetch the results from the database.
-     * Otherwise the results are fetched from the database the first time, then cached.
-     * Next time the same method is called without $criteria, the cached collection is returned.
-     * If this User is new, it will return
-     * an empty collection or the current collection; the criteria is ignored on a new object.
-     *
-     * @param Criteria $criteria optional Criteria object to narrow the query
-     * @param PropelPDO $con optional connection object
-     * @return PropelObjectCollection|Event[] List of Event objects
-     * @throws PropelException
-     */
-    public function getEventOwners($criteria = null, PropelPDO $con = null)
-    {
-        $partial = $this->collEventOwnersPartial && !$this->isNew();
-        if (null === $this->collEventOwners || null !== $criteria  || $partial) {
-            if ($this->isNew() && null === $this->collEventOwners) {
-                // return empty collection
-                $this->initEventOwners();
-            } else {
-                $collEventOwners = EventQuery::create(null, $criteria)
-                    ->filterByOwnerUser($this)
-                    ->find($con);
-                if (null !== $criteria) {
-                    if (false !== $this->collEventOwnersPartial && count($collEventOwners)) {
-                      $this->initEventOwners(false);
-
-                      foreach($collEventOwners as $obj) {
-                        if (false == $this->collEventOwners->contains($obj)) {
-                          $this->collEventOwners->append($obj);
-                        }
-                      }
-
-                      $this->collEventOwnersPartial = true;
-                    }
-
-                    return $collEventOwners;
-                }
-
-                if($partial && $this->collEventOwners) {
-                    foreach($this->collEventOwners as $obj) {
-                        if($obj->isNew()) {
-                            $collEventOwners[] = $obj;
-                        }
-                    }
-                }
-
-                $this->collEventOwners = $collEventOwners;
-                $this->collEventOwnersPartial = false;
-            }
-        }
-
-        return $this->collEventOwners;
-    }
-
-    /**
-     * Sets a collection of EventOwner objects related by a one-to-many relationship
-     * to the current object.
-     * It will also schedule objects for deletion based on a diff between old objects (aka persisted)
-     * and new objects from the given Propel collection.
-     *
-     * @param PropelCollection $eventOwners A Propel collection.
-     * @param PropelPDO $con Optional connection object
-     */
-    public function setEventOwners(PropelCollection $eventOwners, PropelPDO $con = null)
-    {
-        $this->eventOwnersScheduledForDeletion = $this->getEventOwners(new Criteria(), $con)->diff($eventOwners);
-
-        foreach ($this->eventOwnersScheduledForDeletion as $eventOwnerRemoved) {
-            $eventOwnerRemoved->setOwnerUser(null);
-        }
-
-        $this->collEventOwners = null;
-        foreach ($eventOwners as $eventOwner) {
-            $this->addEventOwner($eventOwner);
-        }
-
-        $this->collEventOwners = $eventOwners;
-        $this->collEventOwnersPartial = false;
-    }
-
-    /**
-     * Returns the number of related Event objects.
-     *
-     * @param Criteria $criteria
-     * @param boolean $distinct
-     * @param PropelPDO $con
-     * @return int             Count of related Event objects.
-     * @throws PropelException
-     */
-    public function countEventOwners(Criteria $criteria = null, $distinct = false, PropelPDO $con = null)
-    {
-        $partial = $this->collEventOwnersPartial && !$this->isNew();
-        if (null === $this->collEventOwners || null !== $criteria || $partial) {
-            if ($this->isNew() && null === $this->collEventOwners) {
-                return 0;
-            } else {
-                if($partial && !$criteria) {
-                    return count($this->getEventOwners());
-                }
-                $query = EventQuery::create(null, $criteria);
-                if ($distinct) {
-                    $query->distinct();
-                }
-
-                return $query
-                    ->filterByOwnerUser($this)
-                    ->count($con);
-            }
-        } else {
-            return count($this->collEventOwners);
-        }
-    }
-
-    /**
-     * Method called to associate a Event object to this object
-     * through the Event foreign key attribute.
-     *
-     * @param    Event $l Event
-     * @return User The current object (for fluent API support)
-     */
-    public function addEventOwner(Event $l)
-    {
-        if ($this->collEventOwners === null) {
-            $this->initEventOwners();
-            $this->collEventOwnersPartial = true;
-        }
-        if (!$this->collEventOwners->contains($l)) { // only add it if the **same** object is not already associated
-            $this->doAddEventOwner($l);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @param	EventOwner $eventOwner The eventOwner object to add.
-     */
-    protected function doAddEventOwner($eventOwner)
-    {
-        $this->collEventOwners[]= $eventOwner;
-        $eventOwner->setOwnerUser($this);
-    }
-
-    /**
-     * @param	EventOwner $eventOwner The eventOwner object to remove.
-     */
-    public function removeEventOwner($eventOwner)
-    {
-        if ($this->getEventOwners()->contains($eventOwner)) {
-            $this->collEventOwners->remove($this->collEventOwners->search($eventOwner));
-            if (null === $this->eventOwnersScheduledForDeletion) {
-                $this->eventOwnersScheduledForDeletion = clone $this->collEventOwners;
-                $this->eventOwnersScheduledForDeletion->clear();
-            }
-            $this->eventOwnersScheduledForDeletion[]= $eventOwner;
-            $eventOwner->setOwnerUser(null);
         }
     }
 
@@ -1457,7 +1331,7 @@ abstract class BaseUser extends BaseObject implements Persistent
      * If the $criteria is not null, it is used to always fetch the results from the database.
      * Otherwise the results are fetched from the database the first time, then cached.
      * Next time the same method is called without $criteria, the cached collection is returned.
-     * If this User is new, it will return
+     * If this Event is new, it will return
      * an empty collection or the current collection; the criteria is ignored on a new object.
      *
      * @param Criteria $criteria optional Criteria object to narrow the query
@@ -1474,7 +1348,7 @@ abstract class BaseUser extends BaseObject implements Persistent
                 $this->initEventMembers();
             } else {
                 $collEventMembers = EventMemberQuery::create(null, $criteria)
-                    ->filterByMemberUser($this)
+                    ->filterByEvent($this)
                     ->find($con);
                 if (null !== $criteria) {
                     if (false !== $this->collEventMembersPartial && count($collEventMembers)) {
@@ -1522,7 +1396,7 @@ abstract class BaseUser extends BaseObject implements Persistent
         $this->eventMembersScheduledForDeletion = $this->getEventMembers(new Criteria(), $con)->diff($eventMembers);
 
         foreach ($this->eventMembersScheduledForDeletion as $eventMemberRemoved) {
-            $eventMemberRemoved->setMemberUser(null);
+            $eventMemberRemoved->setEvent(null);
         }
 
         $this->collEventMembers = null;
@@ -1559,7 +1433,7 @@ abstract class BaseUser extends BaseObject implements Persistent
                 }
 
                 return $query
-                    ->filterByMemberUser($this)
+                    ->filterByEvent($this)
                     ->count($con);
             }
         } else {
@@ -1572,7 +1446,7 @@ abstract class BaseUser extends BaseObject implements Persistent
      * through the EventMember foreign key attribute.
      *
      * @param    EventMember $l EventMember
-     * @return User The current object (for fluent API support)
+     * @return Event The current object (for fluent API support)
      */
     public function addEventMember(EventMember $l)
     {
@@ -1593,7 +1467,7 @@ abstract class BaseUser extends BaseObject implements Persistent
     protected function doAddEventMember($eventMember)
     {
         $this->collEventMembers[]= $eventMember;
-        $eventMember->setMemberUser($this);
+        $eventMember->setEvent($this);
     }
 
     /**
@@ -1608,7 +1482,7 @@ abstract class BaseUser extends BaseObject implements Persistent
                 $this->eventMembersScheduledForDeletion->clear();
             }
             $this->eventMembersScheduledForDeletion[]= $eventMember;
-            $eventMember->setMemberUser(null);
+            $eventMember->setEvent(null);
         }
     }
 
@@ -1616,23 +1490,23 @@ abstract class BaseUser extends BaseObject implements Persistent
     /**
      * If this collection has already been initialized with
      * an identical criteria, it returns the collection.
-     * Otherwise if this User is new, it will return
-     * an empty collection; or if this User has previously
+     * Otherwise if this Event is new, it will return
+     * an empty collection; or if this Event has previously
      * been saved, it will retrieve related EventMembers from storage.
      *
      * This method is protected by default in order to keep the public
      * api reasonable.  You can provide public methods for those you
-     * actually need in User.
+     * actually need in Event.
      *
      * @param Criteria $criteria optional Criteria object to narrow the query
      * @param PropelPDO $con optional connection object
      * @param string $join_behavior optional join type to use (defaults to Criteria::LEFT_JOIN)
      * @return PropelObjectCollection|EventMember[] List of EventMember objects
      */
-    public function getEventMembersJoinEvent($criteria = null, $con = null, $join_behavior = Criteria::LEFT_JOIN)
+    public function getEventMembersJoinMemberUser($criteria = null, $con = null, $join_behavior = Criteria::LEFT_JOIN)
     {
         $query = EventMemberQuery::create(null, $criteria);
-        $query->joinWith('Event', $join_behavior);
+        $query->joinWith('MemberUser', $join_behavior);
 
         return $this->getEventMembers($query, $con);
     }
@@ -1689,7 +1563,7 @@ abstract class BaseUser extends BaseObject implements Persistent
      * If the $criteria is not null, it is used to always fetch the results from the database.
      * Otherwise the results are fetched from the database the first time, then cached.
      * Next time the same method is called without $criteria, the cached collection is returned.
-     * If this User is new, it will return
+     * If this Event is new, it will return
      * an empty collection or the current collection; the criteria is ignored on a new object.
      *
      * @param Criteria $criteria optional Criteria object to narrow the query
@@ -1706,7 +1580,7 @@ abstract class BaseUser extends BaseObject implements Persistent
                 $this->initEventPositions();
             } else {
                 $collEventPositions = EventPositionQuery::create(null, $criteria)
-                    ->filterByUser($this)
+                    ->filterByEvent($this)
                     ->find($con);
                 if (null !== $criteria) {
                     if (false !== $this->collEventPositionsPartial && count($collEventPositions)) {
@@ -1754,7 +1628,7 @@ abstract class BaseUser extends BaseObject implements Persistent
         $this->eventPositionsScheduledForDeletion = $this->getEventPositions(new Criteria(), $con)->diff($eventPositions);
 
         foreach ($this->eventPositionsScheduledForDeletion as $eventPositionRemoved) {
-            $eventPositionRemoved->setUser(null);
+            $eventPositionRemoved->setEvent(null);
         }
 
         $this->collEventPositions = null;
@@ -1791,7 +1665,7 @@ abstract class BaseUser extends BaseObject implements Persistent
                 }
 
                 return $query
-                    ->filterByUser($this)
+                    ->filterByEvent($this)
                     ->count($con);
             }
         } else {
@@ -1804,7 +1678,7 @@ abstract class BaseUser extends BaseObject implements Persistent
      * through the EventPosition foreign key attribute.
      *
      * @param    EventPosition $l EventPosition
-     * @return User The current object (for fluent API support)
+     * @return Event The current object (for fluent API support)
      */
     public function addEventPosition(EventPosition $l)
     {
@@ -1825,7 +1699,7 @@ abstract class BaseUser extends BaseObject implements Persistent
     protected function doAddEventPosition($eventPosition)
     {
         $this->collEventPositions[]= $eventPosition;
-        $eventPosition->setUser($this);
+        $eventPosition->setEvent($this);
     }
 
     /**
@@ -1840,7 +1714,7 @@ abstract class BaseUser extends BaseObject implements Persistent
                 $this->eventPositionsScheduledForDeletion->clear();
             }
             $this->eventPositionsScheduledForDeletion[]= $eventPosition;
-            $eventPosition->setUser(null);
+            $eventPosition->setEvent(null);
         }
     }
 
@@ -1848,192 +1722,192 @@ abstract class BaseUser extends BaseObject implements Persistent
     /**
      * If this collection has already been initialized with
      * an identical criteria, it returns the collection.
-     * Otherwise if this User is new, it will return
-     * an empty collection; or if this User has previously
+     * Otherwise if this Event is new, it will return
+     * an empty collection; or if this Event has previously
      * been saved, it will retrieve related EventPositions from storage.
      *
      * This method is protected by default in order to keep the public
      * api reasonable.  You can provide public methods for those you
-     * actually need in User.
+     * actually need in Event.
      *
      * @param Criteria $criteria optional Criteria object to narrow the query
      * @param PropelPDO $con optional connection object
      * @param string $join_behavior optional join type to use (defaults to Criteria::LEFT_JOIN)
      * @return PropelObjectCollection|EventPosition[] List of EventPosition objects
      */
-    public function getEventPositionsJoinEvent($criteria = null, $con = null, $join_behavior = Criteria::LEFT_JOIN)
+    public function getEventPositionsJoinUser($criteria = null, $con = null, $join_behavior = Criteria::LEFT_JOIN)
     {
         $query = EventPositionQuery::create(null, $criteria);
-        $query->joinWith('Event', $join_behavior);
+        $query->joinWith('User', $join_behavior);
 
         return $this->getEventPositions($query, $con);
     }
 
     /**
-     * Clears out the collEvents collection
+     * Clears out the collMemberUsers collection
      *
      * This does not modify the database; however, it will remove any associated objects, causing
      * them to be refetched by subsequent calls to accessor method.
      *
      * @return void
-     * @see        addEvents()
+     * @see        addMemberUsers()
      */
-    public function clearEvents()
+    public function clearMemberUsers()
     {
-        $this->collEvents = null; // important to set this to null since that means it is uninitialized
-        $this->collEventsPartial = null;
+        $this->collMemberUsers = null; // important to set this to null since that means it is uninitialized
+        $this->collMemberUsersPartial = null;
     }
 
     /**
-     * Initializes the collEvents collection.
+     * Initializes the collMemberUsers collection.
      *
-     * By default this just sets the collEvents collection to an empty collection (like clearEvents());
+     * By default this just sets the collMemberUsers collection to an empty collection (like clearMemberUsers());
      * however, you may wish to override this method in your stub class to provide setting appropriate
      * to your application -- for example, setting the initial array to the values stored in database.
      *
      * @return void
      */
-    public function initEvents()
+    public function initMemberUsers()
     {
-        $this->collEvents = new PropelObjectCollection();
-        $this->collEvents->setModel('Event');
+        $this->collMemberUsers = new PropelObjectCollection();
+        $this->collMemberUsers->setModel('User');
     }
 
     /**
-     * Gets a collection of Event objects related by a many-to-many relationship
+     * Gets a collection of User objects related by a many-to-many relationship
      * to the current object by way of the event_member cross-reference table.
      *
      * If the $criteria is not null, it is used to always fetch the results from the database.
      * Otherwise the results are fetched from the database the first time, then cached.
      * Next time the same method is called without $criteria, the cached collection is returned.
-     * If this User is new, it will return
+     * If this Event is new, it will return
      * an empty collection or the current collection; the criteria is ignored on a new object.
      *
      * @param Criteria $criteria Optional query object to filter the query
      * @param PropelPDO $con Optional connection object
      *
-     * @return PropelObjectCollection|Event[] List of Event objects
+     * @return PropelObjectCollection|User[] List of User objects
      */
-    public function getEvents($criteria = null, PropelPDO $con = null)
+    public function getMemberUsers($criteria = null, PropelPDO $con = null)
     {
-        if (null === $this->collEvents || null !== $criteria) {
-            if ($this->isNew() && null === $this->collEvents) {
+        if (null === $this->collMemberUsers || null !== $criteria) {
+            if ($this->isNew() && null === $this->collMemberUsers) {
                 // return empty collection
-                $this->initEvents();
+                $this->initMemberUsers();
             } else {
-                $collEvents = EventQuery::create(null, $criteria)
-                    ->filterByMemberUser($this)
+                $collMemberUsers = UserQuery::create(null, $criteria)
+                    ->filterByEvent($this)
                     ->find($con);
                 if (null !== $criteria) {
-                    return $collEvents;
+                    return $collMemberUsers;
                 }
-                $this->collEvents = $collEvents;
+                $this->collMemberUsers = $collMemberUsers;
             }
         }
 
-        return $this->collEvents;
+        return $this->collMemberUsers;
     }
 
     /**
-     * Sets a collection of Event objects related by a many-to-many relationship
+     * Sets a collection of User objects related by a many-to-many relationship
      * to the current object by way of the event_member cross-reference table.
      * It will also schedule objects for deletion based on a diff between old objects (aka persisted)
      * and new objects from the given Propel collection.
      *
-     * @param PropelCollection $events A Propel collection.
+     * @param PropelCollection $memberUsers A Propel collection.
      * @param PropelPDO $con Optional connection object
      */
-    public function setEvents(PropelCollection $events, PropelPDO $con = null)
+    public function setMemberUsers(PropelCollection $memberUsers, PropelPDO $con = null)
     {
-        $this->clearEvents();
-        $currentEvents = $this->getEvents();
+        $this->clearMemberUsers();
+        $currentMemberUsers = $this->getMemberUsers();
 
-        $this->eventsScheduledForDeletion = $currentEvents->diff($events);
+        $this->memberUsersScheduledForDeletion = $currentMemberUsers->diff($memberUsers);
 
-        foreach ($events as $event) {
-            if (!$currentEvents->contains($event)) {
-                $this->doAddEvent($event);
+        foreach ($memberUsers as $memberUser) {
+            if (!$currentMemberUsers->contains($memberUser)) {
+                $this->doAddMemberUser($memberUser);
             }
         }
 
-        $this->collEvents = $events;
+        $this->collMemberUsers = $memberUsers;
     }
 
     /**
-     * Gets the number of Event objects related by a many-to-many relationship
+     * Gets the number of User objects related by a many-to-many relationship
      * to the current object by way of the event_member cross-reference table.
      *
      * @param Criteria $criteria Optional query object to filter the query
      * @param boolean $distinct Set to true to force count distinct
      * @param PropelPDO $con Optional connection object
      *
-     * @return int the number of related Event objects
+     * @return int the number of related User objects
      */
-    public function countEvents($criteria = null, $distinct = false, PropelPDO $con = null)
+    public function countMemberUsers($criteria = null, $distinct = false, PropelPDO $con = null)
     {
-        if (null === $this->collEvents || null !== $criteria) {
-            if ($this->isNew() && null === $this->collEvents) {
+        if (null === $this->collMemberUsers || null !== $criteria) {
+            if ($this->isNew() && null === $this->collMemberUsers) {
                 return 0;
             } else {
-                $query = EventQuery::create(null, $criteria);
+                $query = UserQuery::create(null, $criteria);
                 if ($distinct) {
                     $query->distinct();
                 }
 
                 return $query
-                    ->filterByMemberUser($this)
+                    ->filterByEvent($this)
                     ->count($con);
             }
         } else {
-            return count($this->collEvents);
+            return count($this->collMemberUsers);
         }
     }
 
     /**
-     * Associate a Event object to this object
+     * Associate a User object to this object
      * through the event_member cross reference table.
      *
-     * @param  Event $event The EventMember object to relate
+     * @param  User $user The EventMember object to relate
      * @return void
      */
-    public function addEvent(Event $event)
+    public function addMemberUser(User $user)
     {
-        if ($this->collEvents === null) {
-            $this->initEvents();
+        if ($this->collMemberUsers === null) {
+            $this->initMemberUsers();
         }
-        if (!$this->collEvents->contains($event)) { // only add it if the **same** object is not already associated
-            $this->doAddEvent($event);
+        if (!$this->collMemberUsers->contains($user)) { // only add it if the **same** object is not already associated
+            $this->doAddMemberUser($user);
 
-            $this->collEvents[]= $event;
+            $this->collMemberUsers[]= $user;
         }
     }
 
     /**
-     * @param	Event $event The event object to add.
+     * @param	MemberUser $memberUser The memberUser object to add.
      */
-    protected function doAddEvent($event)
+    protected function doAddMemberUser($memberUser)
     {
         $eventMember = new EventMember();
-        $eventMember->setEvent($event);
+        $eventMember->setMemberUser($memberUser);
         $this->addEventMember($eventMember);
     }
 
     /**
-     * Remove a Event object to this object
+     * Remove a User object to this object
      * through the event_member cross reference table.
      *
-     * @param Event $event The EventMember object to relate
+     * @param User $user The EventMember object to relate
      * @return void
      */
-    public function removeEvent(Event $event)
+    public function removeMemberUser(User $user)
     {
-        if ($this->getEvents()->contains($event)) {
-            $this->collEvents->remove($this->collEvents->search($event));
-            if (null === $this->eventsScheduledForDeletion) {
-                $this->eventsScheduledForDeletion = clone $this->collEvents;
-                $this->eventsScheduledForDeletion->clear();
+        if ($this->getMemberUsers()->contains($user)) {
+            $this->collMemberUsers->remove($this->collMemberUsers->search($user));
+            if (null === $this->memberUsersScheduledForDeletion) {
+                $this->memberUsersScheduledForDeletion = clone $this->collMemberUsers;
+                $this->memberUsersScheduledForDeletion->clear();
             }
-            $this->eventsScheduledForDeletion[]= $event;
+            $this->memberUsersScheduledForDeletion[]= $user;
         }
     }
 
@@ -2043,14 +1917,15 @@ abstract class BaseUser extends BaseObject implements Persistent
     public function clear()
     {
         $this->id = null;
-        $this->username = null;
-        $this->first_name = null;
-        $this->last_name = null;
-        $this->email = null;
-        $this->password = null;
+        $this->owner_id = null;
+        $this->title = null;
+        $this->place = null;
+        $this->require_receipt = null;
+        $this->billed = null;
         $this->alreadyInSave = false;
         $this->alreadyInValidation = false;
         $this->clearAllReferences();
+        $this->applyDefaultValues();
         $this->resetModified();
         $this->setNew(true);
         $this->setDeleted(false);
@@ -2068,11 +1943,6 @@ abstract class BaseUser extends BaseObject implements Persistent
     public function clearAllReferences($deep = false)
     {
         if ($deep) {
-            if ($this->collEventOwners) {
-                foreach ($this->collEventOwners as $o) {
-                    $o->clearAllReferences($deep);
-                }
-            }
             if ($this->collEventMembers) {
                 foreach ($this->collEventMembers as $o) {
                     $o->clearAllReferences($deep);
@@ -2083,17 +1953,13 @@ abstract class BaseUser extends BaseObject implements Persistent
                     $o->clearAllReferences($deep);
                 }
             }
-            if ($this->collEvents) {
-                foreach ($this->collEvents as $o) {
+            if ($this->collMemberUsers) {
+                foreach ($this->collMemberUsers as $o) {
                     $o->clearAllReferences($deep);
                 }
             }
         } // if ($deep)
 
-        if ($this->collEventOwners instanceof PropelCollection) {
-            $this->collEventOwners->clearIterator();
-        }
-        $this->collEventOwners = null;
         if ($this->collEventMembers instanceof PropelCollection) {
             $this->collEventMembers->clearIterator();
         }
@@ -2102,10 +1968,11 @@ abstract class BaseUser extends BaseObject implements Persistent
             $this->collEventPositions->clearIterator();
         }
         $this->collEventPositions = null;
-        if ($this->collEvents instanceof PropelCollection) {
-            $this->collEvents->clearIterator();
+        if ($this->collMemberUsers instanceof PropelCollection) {
+            $this->collMemberUsers->clearIterator();
         }
-        $this->collEvents = null;
+        $this->collMemberUsers = null;
+        $this->aOwnerUser = null;
     }
 
     /**
@@ -2115,7 +1982,7 @@ abstract class BaseUser extends BaseObject implements Persistent
      */
     public function __toString()
     {
-        return (string) $this->exportTo(UserPeer::DEFAULT_STRING_FORMAT);
+        return (string) $this->exportTo(EventPeer::DEFAULT_STRING_FORMAT);
     }
 
     /**

@@ -14,6 +14,7 @@ class SecurityController extends Controller {
      * 
      * @Route("/login", name="login")
      * @Route("/login_check", name="login_check")
+     * @Route("/logout", name="logout")
      */
     public function loginAction() {
         $request = $this->getRequest();

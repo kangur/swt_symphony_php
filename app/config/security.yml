@@ -23,8 +23,8 @@ security:
             form_login:
                 check_path: /login_check
                 login_path: /login
-#            logout:
-#                path:   /demo/secured/logout
+            logout:
+                path:   /logout
 #                target: /demo/
             anonymous: ~
             #http_basic:

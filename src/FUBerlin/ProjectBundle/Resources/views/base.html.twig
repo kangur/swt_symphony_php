@@ -2,12 +2,22 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <title>{% block title %}Welcome!{% endblock %}</title>
+        <title>{% block title %}Welcome here!!{% endblock %}</title>
         {% block stylesheets %}{% endblock %}
         <link rel="shortcut icon" href="{{ asset('favicon.ico') }}" />
     </head>
     <body>
-        {% block body %}{% endblock %}
+        <div id="login_form">
+            {% if app.user %}
+                User: {{ app.user.username }}
+            {% else %}
+                <a href="{{ path('login') }}">Login</a><br>
+                <a href="{{ path('register') }}">Register</a>
+            {% endif %}
+        </div>
+        <div id="content">
+            {% block content %}{% endblock %}
+        </div>
         {% block javascripts %}{% endblock %}
     </body>
 </html>

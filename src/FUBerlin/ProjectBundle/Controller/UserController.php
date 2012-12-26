@@ -11,15 +11,6 @@ use \FUBerlin\ProjectBundle\Model\User;
 class UserController extends Controller {
 
     /**
-     * @Route("/hellonew/{name}")
-     * @Template()
-     */
-    public function indexAction($name) {
-        return $this->render(
-                        'FUBerlinProjectBundle:Hello:index.html.twig', array('name' => $name));
-    }
-
-    /**
      * @Route("/register", name="register")
      */
     public function registerAction(\Symfony\Component\HttpFoundation\Request $request) {

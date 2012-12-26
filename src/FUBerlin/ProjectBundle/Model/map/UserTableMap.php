@@ -56,6 +56,10 @@ class UserTableMap extends TableMap
      */
     public function buildRelations()
     {
+        $this->addRelation('EventOwner', 'FUBerlin\\ProjectBundle\\Model\\Event', RelationMap::ONE_TO_MANY, array('id' => 'owner_id', ), 'CASCADE', 'CASCADE', 'EventOwners');
+        $this->addRelation('EventMember', 'FUBerlin\\ProjectBundle\\Model\\EventMember', RelationMap::ONE_TO_MANY, array('id' => 'user_id', ), 'CASCADE', 'CASCADE', 'EventMembers');
+        $this->addRelation('EventPosition', 'FUBerlin\\ProjectBundle\\Model\\EventPosition', RelationMap::ONE_TO_MANY, array('id' => 'user_id', ), 'CASCADE', 'CASCADE', 'EventPositions');
+        $this->addRelation('Event', 'FUBerlin\\ProjectBundle\\Model\\Event', RelationMap::MANY_TO_MANY, array(), 'CASCADE', 'CASCADE', 'Events');
     } // buildRelations()
 
 } // UserTableMap
