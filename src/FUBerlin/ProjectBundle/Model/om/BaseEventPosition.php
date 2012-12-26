@@ -41,6 +41,12 @@ abstract class BaseEventPosition extends BaseObject implements Persistent
     protected $startCopy = false;
 
     /**
+     * The value for the id field.
+     * @var        int
+     */
+    protected $id;
+
+    /**
      * The value for the user_id field.
      * @var        int
      */
@@ -95,6 +101,16 @@ abstract class BaseEventPosition extends BaseObject implements Persistent
     protected $alreadyInValidation = false;
 
     /**
+     * Get the [id] column value.
+     *
+     * @return int
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
      * Get the [user_id] column value.
      *
      * @return int
@@ -143,6 +159,27 @@ abstract class BaseEventPosition extends BaseObject implements Persistent
     {
         return $this->receipt_path;
     }
+
+    /**
+     * Set the value of [id] column.
+     *
+     * @param int $v new value
+     * @return EventPosition The current object (for fluent API support)
+     */
+    public function setId($v)
+    {
+        if ($v !== null) {
+            $v = (int) $v;
+        }
+
+        if ($this->id !== $v) {
+            $this->id = $v;
+            $this->modifiedColumns[] = EventPositionPeer::ID;
+        }
+
+
+        return $this;
+    } // setId()
 
     /**
      * Set the value of [user_id] column.
@@ -289,11 +326,12 @@ abstract class BaseEventPosition extends BaseObject implements Persistent
     {
         try {
 
-            $this->user_id = ($row[$startcol + 0] !== null) ? (int) $row[$startcol + 0] : null;
-            $this->event_id = ($row[$startcol + 1] !== null) ? (int) $row[$startcol + 1] : null;
-            $this->title = ($row[$startcol + 2] !== null) ? (string) $row[$startcol + 2] : null;
-            $this->amount = ($row[$startcol + 3] !== null) ? (string) $row[$startcol + 3] : null;
-            $this->receipt_path = ($row[$startcol + 4] !== null) ? (string) $row[$startcol + 4] : null;
+            $this->id = ($row[$startcol + 0] !== null) ? (int) $row[$startcol + 0] : null;
+            $this->user_id = ($row[$startcol + 1] !== null) ? (int) $row[$startcol + 1] : null;
+            $this->event_id = ($row[$startcol + 2] !== null) ? (int) $row[$startcol + 2] : null;
+            $this->title = ($row[$startcol + 3] !== null) ? (string) $row[$startcol + 3] : null;
+            $this->amount = ($row[$startcol + 4] !== null) ? (string) $row[$startcol + 4] : null;
+            $this->receipt_path = ($row[$startcol + 5] !== null) ? (string) $row[$startcol + 5] : null;
             $this->resetModified();
 
             $this->setNew(false);
@@ -302,7 +340,7 @@ abstract class BaseEventPosition extends BaseObject implements Persistent
                 $this->ensureConsistency();
             }
 
-            return $startcol + 5; // 5 = EventPositionPeer::NUM_HYDRATE_COLUMNS.
+            return $startcol + 6; // 6 = EventPositionPeer::NUM_HYDRATE_COLUMNS.
 
         } catch (Exception $e) {
             throw new PropelException("Error populating EventPosition object", $e);
@@ -535,8 +573,15 @@ abstract class BaseEventPosition extends BaseObject implements Persistent
         $modifiedColumns = array();
         $index = 0;
 
+        $this->modifiedColumns[] = EventPositionPeer::ID;
+        if (null !== $this->id) {
+            throw new PropelException('Cannot insert a value for auto-increment primary key (' . EventPositionPeer::ID . ')');
+        }
 
          // check the columns in natural order for more readable SQL queries
+        if ($this->isColumnModified(EventPositionPeer::ID)) {
+            $modifiedColumns[':p' . $index++]  = '`ID`';
+        }
         if ($this->isColumnModified(EventPositionPeer::USER_ID)) {
             $modifiedColumns[':p' . $index++]  = '`USER_ID`';
         }
@@ -563,6 +608,9 @@ abstract class BaseEventPosition extends BaseObject implements Persistent
             $stmt = $con->prepare($sql);
             foreach ($modifiedColumns as $identifier => $columnName) {
                 switch ($columnName) {
+                    case '`ID`':
+                        $stmt->bindValue($identifier, $this->id, PDO::PARAM_INT);
+                        break;
                     case '`USER_ID`':
                         $stmt->bindValue($identifier, $this->user_id, PDO::PARAM_INT);
                         break;
@@ -585,6 +633,13 @@ abstract class BaseEventPosition extends BaseObject implements Persistent
             Propel::log($e->getMessage(), Propel::LOG_ERR);
             throw new PropelException(sprintf('Unable to execute INSERT statement [%s]', $sql), $e);
         }
+
+        try {
+            $pk = $con->lastInsertId();
+        } catch (Exception $e) {
+            throw new PropelException('Unable to get autoincrement id.', $e);
+        }
+        $this->setId($pk);
 
         $this->setNew(false);
     }
@@ -724,18 +779,21 @@ abstract class BaseEventPosition extends BaseObject implements Persistent
     {
         switch ($pos) {
             case 0:
-                return $this->getUserId();
+                return $this->getId();
                 break;
             case 1:
-                return $this->getEventId();
+                return $this->getUserId();
                 break;
             case 2:
-                return $this->getTitle();
+                return $this->getEventId();
                 break;
             case 3:
-                return $this->getAmount();
+                return $this->getTitle();
                 break;
             case 4:
+                return $this->getAmount();
+                break;
+            case 5:
                 return $this->getReceiptPath();
                 break;
             default:
@@ -761,17 +819,18 @@ abstract class BaseEventPosition extends BaseObject implements Persistent
      */
     public function toArray($keyType = BasePeer::TYPE_PHPNAME, $includeLazyLoadColumns = true, $alreadyDumpedObjects = array(), $includeForeignObjects = false)
     {
-        if (isset($alreadyDumpedObjects['EventPosition'][serialize($this->getPrimaryKey())])) {
+        if (isset($alreadyDumpedObjects['EventPosition'][$this->getPrimaryKey()])) {
             return '*RECURSION*';
         }
-        $alreadyDumpedObjects['EventPosition'][serialize($this->getPrimaryKey())] = true;
+        $alreadyDumpedObjects['EventPosition'][$this->getPrimaryKey()] = true;
         $keys = EventPositionPeer::getFieldNames($keyType);
         $result = array(
-            $keys[0] => $this->getUserId(),
-            $keys[1] => $this->getEventId(),
-            $keys[2] => $this->getTitle(),
-            $keys[3] => $this->getAmount(),
-            $keys[4] => $this->getReceiptPath(),
+            $keys[0] => $this->getId(),
+            $keys[1] => $this->getUserId(),
+            $keys[2] => $this->getEventId(),
+            $keys[3] => $this->getTitle(),
+            $keys[4] => $this->getAmount(),
+            $keys[5] => $this->getReceiptPath(),
         );
         if ($includeForeignObjects) {
             if (null !== $this->aUser) {
@@ -815,18 +874,21 @@ abstract class BaseEventPosition extends BaseObject implements Persistent
     {
         switch ($pos) {
             case 0:
-                $this->setUserId($value);
+                $this->setId($value);
                 break;
             case 1:
-                $this->setEventId($value);
+                $this->setUserId($value);
                 break;
             case 2:
-                $this->setTitle($value);
+                $this->setEventId($value);
                 break;
             case 3:
-                $this->setAmount($value);
+                $this->setTitle($value);
                 break;
             case 4:
+                $this->setAmount($value);
+                break;
+            case 5:
                 $this->setReceiptPath($value);
                 break;
         } // switch()
@@ -853,11 +915,12 @@ abstract class BaseEventPosition extends BaseObject implements Persistent
     {
         $keys = EventPositionPeer::getFieldNames($keyType);
 
-        if (array_key_exists($keys[0], $arr)) $this->setUserId($arr[$keys[0]]);
-        if (array_key_exists($keys[1], $arr)) $this->setEventId($arr[$keys[1]]);
-        if (array_key_exists($keys[2], $arr)) $this->setTitle($arr[$keys[2]]);
-        if (array_key_exists($keys[3], $arr)) $this->setAmount($arr[$keys[3]]);
-        if (array_key_exists($keys[4], $arr)) $this->setReceiptPath($arr[$keys[4]]);
+        if (array_key_exists($keys[0], $arr)) $this->setId($arr[$keys[0]]);
+        if (array_key_exists($keys[1], $arr)) $this->setUserId($arr[$keys[1]]);
+        if (array_key_exists($keys[2], $arr)) $this->setEventId($arr[$keys[2]]);
+        if (array_key_exists($keys[3], $arr)) $this->setTitle($arr[$keys[3]]);
+        if (array_key_exists($keys[4], $arr)) $this->setAmount($arr[$keys[4]]);
+        if (array_key_exists($keys[5], $arr)) $this->setReceiptPath($arr[$keys[5]]);
     }
 
     /**
@@ -869,6 +932,7 @@ abstract class BaseEventPosition extends BaseObject implements Persistent
     {
         $criteria = new Criteria(EventPositionPeer::DATABASE_NAME);
 
+        if ($this->isColumnModified(EventPositionPeer::ID)) $criteria->add(EventPositionPeer::ID, $this->id);
         if ($this->isColumnModified(EventPositionPeer::USER_ID)) $criteria->add(EventPositionPeer::USER_ID, $this->user_id);
         if ($this->isColumnModified(EventPositionPeer::EVENT_ID)) $criteria->add(EventPositionPeer::EVENT_ID, $this->event_id);
         if ($this->isColumnModified(EventPositionPeer::TITLE)) $criteria->add(EventPositionPeer::TITLE, $this->title);
@@ -889,36 +953,29 @@ abstract class BaseEventPosition extends BaseObject implements Persistent
     public function buildPkeyCriteria()
     {
         $criteria = new Criteria(EventPositionPeer::DATABASE_NAME);
-        $criteria->add(EventPositionPeer::USER_ID, $this->user_id);
-        $criteria->add(EventPositionPeer::EVENT_ID, $this->event_id);
+        $criteria->add(EventPositionPeer::ID, $this->id);
 
         return $criteria;
     }
 
     /**
-     * Returns the composite primary key for this object.
-     * The array elements will be in same order as specified in XML.
-     * @return array
+     * Returns the primary key for this object (row).
+     * @return int
      */
     public function getPrimaryKey()
     {
-        $pks = array();
-        $pks[0] = $this->getUserId();
-        $pks[1] = $this->getEventId();
-
-        return $pks;
+        return $this->getId();
     }
 
     /**
-     * Set the [composite] primary key.
+     * Generic method to set the primary key (id column).
      *
-     * @param array $keys The elements of the composite key (order must match the order in XML file).
+     * @param  int $key Primary key.
      * @return void
      */
-    public function setPrimaryKey($keys)
+    public function setPrimaryKey($key)
     {
-        $this->setUserId($keys[0]);
-        $this->setEventId($keys[1]);
+        $this->setId($key);
     }
 
     /**
@@ -928,7 +985,7 @@ abstract class BaseEventPosition extends BaseObject implements Persistent
     public function isPrimaryKeyNull()
     {
 
-        return (null === $this->getUserId()) && (null === $this->getEventId());
+        return null === $this->getId();
     }
 
     /**
@@ -963,6 +1020,7 @@ abstract class BaseEventPosition extends BaseObject implements Persistent
 
         if ($makeNew) {
             $copyObj->setNew(true);
+            $copyObj->setId(NULL); // this is a auto-increment column, so set to default value
         }
     }
 
@@ -1113,6 +1171,7 @@ abstract class BaseEventPosition extends BaseObject implements Persistent
      */
     public function clear()
     {
+        $this->id = null;
         $this->user_id = null;
         $this->event_id = null;
         $this->title = null;

@@ -1,0 +1,10 @@
+{% extends 'FUBerlinProjectBundle::base.html.twig' %}
+
+{% block content %}
+
+<form action="{{ path('event_add') }}" method="post" {{ form_enctype(form) }}>
+    {{ form_widget(form) }}
+
+    <input type="submit" />
+</form>
+{% endblock %}

@@ -12,12 +12,10 @@ class EventType extends AbstractType
      * {@inheritdoc}
      */
     public function buildForm(FormBuilderInterface $builder, array $options)
-    {
-        $builder->add('ownerId');
+    {        
         $builder->add('title');
         $builder->add('place');
-        $builder->add('requireReceipt');
-        $builder->add('billed');
+        $builder->add('requireReceipt','checkbox', array('required'=>false));        
     }
 
     /**

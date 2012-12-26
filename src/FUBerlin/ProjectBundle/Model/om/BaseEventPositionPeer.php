@@ -31,13 +31,16 @@ abstract class BaseEventPositionPeer
     const TM_CLASS = 'EventPositionTableMap';
 
     /** The total number of columns. */
-    const NUM_COLUMNS = 5;
+    const NUM_COLUMNS = 6;
 
     /** The number of lazy-loaded columns. */
     const NUM_LAZY_LOAD_COLUMNS = 0;
 
     /** The number of columns to hydrate (NUM_COLUMNS - NUM_LAZY_LOAD_COLUMNS) */
-    const NUM_HYDRATE_COLUMNS = 5;
+    const NUM_HYDRATE_COLUMNS = 6;
+
+    /** the column name for the ID field */
+    const ID = 'event_position.ID';
 
     /** the column name for the USER_ID field */
     const USER_ID = 'event_position.USER_ID';
@@ -73,12 +76,12 @@ abstract class BaseEventPositionPeer
      * e.g. EventPositionPeer::$fieldNames[EventPositionPeer::TYPE_PHPNAME][0] = 'Id'
      */
     protected static $fieldNames = array (
-        BasePeer::TYPE_PHPNAME => array ('UserId', 'EventId', 'Title', 'Amount', 'ReceiptPath', ),
-        BasePeer::TYPE_STUDLYPHPNAME => array ('userId', 'eventId', 'title', 'amount', 'receiptPath', ),
-        BasePeer::TYPE_COLNAME => array (EventPositionPeer::USER_ID, EventPositionPeer::EVENT_ID, EventPositionPeer::TITLE, EventPositionPeer::AMOUNT, EventPositionPeer::RECEIPT_PATH, ),
-        BasePeer::TYPE_RAW_COLNAME => array ('USER_ID', 'EVENT_ID', 'TITLE', 'AMOUNT', 'RECEIPT_PATH', ),
-        BasePeer::TYPE_FIELDNAME => array ('user_id', 'event_id', 'title', 'amount', 'receipt_path', ),
-        BasePeer::TYPE_NUM => array (0, 1, 2, 3, 4, )
+        BasePeer::TYPE_PHPNAME => array ('Id', 'UserId', 'EventId', 'Title', 'Amount', 'ReceiptPath', ),
+        BasePeer::TYPE_STUDLYPHPNAME => array ('id', 'userId', 'eventId', 'title', 'amount', 'receiptPath', ),
+        BasePeer::TYPE_COLNAME => array (EventPositionPeer::ID, EventPositionPeer::USER_ID, EventPositionPeer::EVENT_ID, EventPositionPeer::TITLE, EventPositionPeer::AMOUNT, EventPositionPeer::RECEIPT_PATH, ),
+        BasePeer::TYPE_RAW_COLNAME => array ('ID', 'USER_ID', 'EVENT_ID', 'TITLE', 'AMOUNT', 'RECEIPT_PATH', ),
+        BasePeer::TYPE_FIELDNAME => array ('id', 'user_id', 'event_id', 'title', 'amount', 'receipt_path', ),
+        BasePeer::TYPE_NUM => array (0, 1, 2, 3, 4, 5, )
     );
 
     /**
@@ -88,12 +91,12 @@ abstract class BaseEventPositionPeer
      * e.g. EventPositionPeer::$fieldNames[BasePeer::TYPE_PHPNAME]['Id'] = 0
      */
     protected static $fieldKeys = array (
-        BasePeer::TYPE_PHPNAME => array ('UserId' => 0, 'EventId' => 1, 'Title' => 2, 'Amount' => 3, 'ReceiptPath' => 4, ),
-        BasePeer::TYPE_STUDLYPHPNAME => array ('userId' => 0, 'eventId' => 1, 'title' => 2, 'amount' => 3, 'receiptPath' => 4, ),
-        BasePeer::TYPE_COLNAME => array (EventPositionPeer::USER_ID => 0, EventPositionPeer::EVENT_ID => 1, EventPositionPeer::TITLE => 2, EventPositionPeer::AMOUNT => 3, EventPositionPeer::RECEIPT_PATH => 4, ),
-        BasePeer::TYPE_RAW_COLNAME => array ('USER_ID' => 0, 'EVENT_ID' => 1, 'TITLE' => 2, 'AMOUNT' => 3, 'RECEIPT_PATH' => 4, ),
-        BasePeer::TYPE_FIELDNAME => array ('user_id' => 0, 'event_id' => 1, 'title' => 2, 'amount' => 3, 'receipt_path' => 4, ),
-        BasePeer::TYPE_NUM => array (0, 1, 2, 3, 4, )
+        BasePeer::TYPE_PHPNAME => array ('Id' => 0, 'UserId' => 1, 'EventId' => 2, 'Title' => 3, 'Amount' => 4, 'ReceiptPath' => 5, ),
+        BasePeer::TYPE_STUDLYPHPNAME => array ('id' => 0, 'userId' => 1, 'eventId' => 2, 'title' => 3, 'amount' => 4, 'receiptPath' => 5, ),
+        BasePeer::TYPE_COLNAME => array (EventPositionPeer::ID => 0, EventPositionPeer::USER_ID => 1, EventPositionPeer::EVENT_ID => 2, EventPositionPeer::TITLE => 3, EventPositionPeer::AMOUNT => 4, EventPositionPeer::RECEIPT_PATH => 5, ),
+        BasePeer::TYPE_RAW_COLNAME => array ('ID' => 0, 'USER_ID' => 1, 'EVENT_ID' => 2, 'TITLE' => 3, 'AMOUNT' => 4, 'RECEIPT_PATH' => 5, ),
+        BasePeer::TYPE_FIELDNAME => array ('id' => 0, 'user_id' => 1, 'event_id' => 2, 'title' => 3, 'amount' => 4, 'receipt_path' => 5, ),
+        BasePeer::TYPE_NUM => array (0, 1, 2, 3, 4, 5, )
     );
 
     /**
@@ -167,12 +170,14 @@ abstract class BaseEventPositionPeer
     public static function addSelectColumns(Criteria $criteria, $alias = null)
     {
         if (null === $alias) {
+            $criteria->addSelectColumn(EventPositionPeer::ID);
             $criteria->addSelectColumn(EventPositionPeer::USER_ID);
             $criteria->addSelectColumn(EventPositionPeer::EVENT_ID);
             $criteria->addSelectColumn(EventPositionPeer::TITLE);
             $criteria->addSelectColumn(EventPositionPeer::AMOUNT);
             $criteria->addSelectColumn(EventPositionPeer::RECEIPT_PATH);
         } else {
+            $criteria->addSelectColumn($alias . '.ID');
             $criteria->addSelectColumn($alias . '.USER_ID');
             $criteria->addSelectColumn($alias . '.EVENT_ID');
             $criteria->addSelectColumn($alias . '.TITLE');
@@ -304,7 +309,7 @@ abstract class BaseEventPositionPeer
     {
         if (Propel::isInstancePoolingEnabled()) {
             if ($key === null) {
-                $key = serialize(array((string) $obj->getUserId(), (string) $obj->getEventId()));
+                $key = (string) $obj->getId();
             } // if key === null
             EventPositionPeer::$instances[$key] = $obj;
         }
@@ -327,10 +332,10 @@ abstract class BaseEventPositionPeer
     {
         if (Propel::isInstancePoolingEnabled() && $value !== null) {
             if (is_object($value) && $value instanceof EventPosition) {
-                $key = serialize(array((string) $value->getUserId(), (string) $value->getEventId()));
-            } elseif (is_array($value) && count($value) === 2) {
+                $key = (string) $value->getId();
+            } elseif (is_scalar($value)) {
                 // assume we've been passed a primary key
-                $key = serialize(array((string) $value[0], (string) $value[1]));
+                $key = (string) $value;
             } else {
                 $e = new PropelException("Invalid value passed to removeInstanceFromPool().  Expected primary key or EventPosition object; got " . (is_object($value) ? get_class($value) . ' object.' : var_export($value,true)));
                 throw $e;
@@ -392,11 +397,11 @@ abstract class BaseEventPositionPeer
     public static function getPrimaryKeyHashFromRow($row, $startcol = 0)
     {
         // If the PK cannot be derived from the row, return null.
-        if ($row[$startcol] === null && $row[$startcol + 1] === null) {
+        if ($row[$startcol] === null) {
             return null;
         }
 
-        return serialize(array((string) $row[$startcol], (string) $row[$startcol + 1]));
+        return (string) $row[$startcol];
     }
 
     /**
@@ -411,7 +416,7 @@ abstract class BaseEventPositionPeer
     public static function getPrimaryKeyFromRow($row, $startcol = 0)
     {
 
-        return array((int) $row[$startcol], (int) $row[$startcol + 1]);
+        return (int) $row[$startcol];
     }
 
     /**
@@ -1159,6 +1164,10 @@ abstract class BaseEventPositionPeer
             $criteria = $values->buildCriteria(); // build Criteria from EventPosition object
         }
 
+        if ($criteria->containsKey(EventPositionPeer::ID) && $criteria->keyContainsValue(EventPositionPeer::ID) ) {
+            throw new PropelException('Cannot insert a value for auto-increment primary key ('.EventPositionPeer::ID.')');
+        }
+
 
         // Set the correct dbName
         $criteria->setDbName(EventPositionPeer::DATABASE_NAME);
@@ -1197,18 +1206,10 @@ abstract class BaseEventPositionPeer
         if ($values instanceof Criteria) {
             $criteria = clone $values; // rename for clarity
 
-            $comparison = $criteria->getComparison(EventPositionPeer::USER_ID);
-            $value = $criteria->remove(EventPositionPeer::USER_ID);
+            $comparison = $criteria->getComparison(EventPositionPeer::ID);
+            $value = $criteria->remove(EventPositionPeer::ID);
             if ($value) {
-                $selectCriteria->add(EventPositionPeer::USER_ID, $value, $comparison);
-            } else {
-                $selectCriteria->setPrimaryTableName(EventPositionPeer::TABLE_NAME);
-            }
-
-            $comparison = $criteria->getComparison(EventPositionPeer::EVENT_ID);
-            $value = $criteria->remove(EventPositionPeer::EVENT_ID);
-            if ($value) {
-                $selectCriteria->add(EventPositionPeer::EVENT_ID, $value, $comparison);
+                $selectCriteria->add(EventPositionPeer::ID, $value, $comparison);
             } else {
                 $selectCriteria->setPrimaryTableName(EventPositionPeer::TABLE_NAME);
             }
@@ -1287,18 +1288,10 @@ abstract class BaseEventPositionPeer
             $criteria = $values->buildPkeyCriteria();
         } else { // it's a primary key, or an array of pks
             $criteria = new Criteria(EventPositionPeer::DATABASE_NAME);
-            // primary key is composite; we therefore, expect
-            // the primary key passed to be an array of pkey values
-            if (count($values) == count($values, COUNT_RECURSIVE)) {
-                // array is not multi-dimensional
-                $values = array($values);
-            }
-            foreach ($values as $value) {
-                $criterion = $criteria->getNewCriterion(EventPositionPeer::USER_ID, $value[0]);
-                $criterion->addAnd($criteria->getNewCriterion(EventPositionPeer::EVENT_ID, $value[1]));
-                $criteria->addOr($criterion);
-                // we can invalidate the cache for this single PK
-                EventPositionPeer::removeInstanceFromPool($value);
+            $criteria->add(EventPositionPeer::ID, (array) $values, Criteria::IN);
+            // invalidate the cache for this object(s)
+            foreach ((array) $values as $singleval) {
+                EventPositionPeer::removeInstanceFromPool($singleval);
             }
         }
 
@@ -1361,28 +1354,58 @@ abstract class BaseEventPositionPeer
     }
 
     /**
-     * Retrieve object using using composite pkey values.
-     * @param   int $user_id
-     * @param   int $event_id
-     * @param      PropelPDO $con
-     * @return   EventPosition
+     * Retrieve a single object by pkey.
+     *
+     * @param      int $pk the primary key.
+     * @param      PropelPDO $con the connection to use
+     * @return EventPosition
      */
-    public static function retrieveByPK($user_id, $event_id, PropelPDO $con = null) {
-        $_instancePoolKey = serialize(array((string) $user_id, (string) $event_id));
-         if (null !== ($obj = EventPositionPeer::getInstanceFromPool($_instancePoolKey))) {
-             return $obj;
+    public static function retrieveByPK($pk, PropelPDO $con = null)
+    {
+
+        if (null !== ($obj = EventPositionPeer::getInstanceFromPool((string) $pk))) {
+            return $obj;
         }
 
         if ($con === null) {
             $con = Propel::getConnection(EventPositionPeer::DATABASE_NAME, Propel::CONNECTION_READ);
         }
+
         $criteria = new Criteria(EventPositionPeer::DATABASE_NAME);
-        $criteria->add(EventPositionPeer::USER_ID, $user_id);
-        $criteria->add(EventPositionPeer::EVENT_ID, $event_id);
+        $criteria->add(EventPositionPeer::ID, $pk);
+
         $v = EventPositionPeer::doSelect($criteria, $con);
 
-        return !empty($v) ? $v[0] : null;
+        return !empty($v) > 0 ? $v[0] : null;
     }
+
+    /**
+     * Retrieve multiple objects by pkey.
+     *
+     * @param      array $pks List of primary keys
+     * @param      PropelPDO $con the connection to use
+     * @return EventPosition[]
+     * @throws PropelException Any exceptions caught during processing will be
+     *		 rethrown wrapped into a PropelException.
+     */
+    public static function retrieveByPKs($pks, PropelPDO $con = null)
+    {
+        if ($con === null) {
+            $con = Propel::getConnection(EventPositionPeer::DATABASE_NAME, Propel::CONNECTION_READ);
+        }
+
+        $objs = null;
+        if (empty($pks)) {
+            $objs = array();
+        } else {
+            $criteria = new Criteria(EventPositionPeer::DATABASE_NAME);
+            $criteria->add(EventPositionPeer::ID, $pks, Criteria::IN);
+            $objs = EventPositionPeer::doSelect($criteria, $con);
+        }
+
+        return $objs;
+    }
+
 } // BaseEventPositionPeer
 
 // This is the static code needed to register the TableMap for this table with the main Propel class.

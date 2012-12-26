@@ -40,10 +40,11 @@ class EventPositionTableMap extends TableMap
         $this->setPhpName('EventPosition');
         $this->setClassname('FUBerlin\\ProjectBundle\\Model\\EventPosition');
         $this->setPackage('src.FUBerlin.ProjectBundle.Model');
-        $this->setUseIdGenerator(false);
+        $this->setUseIdGenerator(true);
         // columns
-        $this->addForeignPrimaryKey('USER_ID', 'UserId', 'INTEGER' , 'user', 'ID', true, null, null);
-        $this->addForeignPrimaryKey('EVENT_ID', 'EventId', 'INTEGER' , 'event', 'ID', true, null, null);
+        $this->addPrimaryKey('ID', 'Id', 'INTEGER', true, null, null);
+        $this->addForeignKey('USER_ID', 'UserId', 'INTEGER', 'user', 'ID', false, null, null);
+        $this->addForeignKey('EVENT_ID', 'EventId', 'INTEGER', 'event', 'ID', false, null, null);
         $this->addColumn('TITLE', 'Title', 'VARCHAR', false, 100, null);
         $this->addColumn('AMOUNT', 'Amount', 'DECIMAL', false, null, null);
         $this->addColumn('RECEIPT_PATH', 'ReceiptPath', 'VARCHAR', false, 255, null);

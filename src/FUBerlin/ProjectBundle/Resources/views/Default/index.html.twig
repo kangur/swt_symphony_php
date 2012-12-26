@@ -1,8 +1,15 @@
 {% extends 'FUBerlinProjectBundle::base.html.twig' %}
 
 {% block content %}
-Hello! This is our project
- {{ name }}!
+Hello!
+{% if app.user %}
+<h2>Tools:</h2>
+    <a href="{{ path('event_add') }}">Add an event</a>
+<h2>My events:</h2>
+{% else %}
+    <h2>Recent events:</h2>
+{% endif %}
+    
 {% endblock %}
 
 {% block title %}

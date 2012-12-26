@@ -70,6 +70,7 @@ abstract class BaseEvent extends BaseObject implements Persistent
 
     /**
      * The value for the require_receipt field.
+     * Note: this column has a database default value of: false
      * @var        boolean
      */
     protected $require_receipt;
@@ -143,6 +144,7 @@ abstract class BaseEvent extends BaseObject implements Persistent
      */
     public function applyDefaultValues()
     {
+        $this->require_receipt = false;
         $this->billed = false;
     }
 
@@ -372,6 +374,10 @@ abstract class BaseEvent extends BaseObject implements Persistent
      */
     public function hasOnlyDefaultValues()
     {
+            if ($this->require_receipt !== false) {
+                return false;
+            }
+
             if ($this->billed !== false) {
                 return false;
             }
@@ -658,9 +664,10 @@ abstract class BaseEvent extends BaseObject implements Persistent
 
             if ($this->eventPositionsScheduledForDeletion !== null) {
                 if (!$this->eventPositionsScheduledForDeletion->isEmpty()) {
-                    EventPositionQuery::create()
-                        ->filterByPrimaryKeys($this->eventPositionsScheduledForDeletion->getPrimaryKeys(false))
-                        ->delete($con);
+                    foreach ($this->eventPositionsScheduledForDeletion as $eventPosition) {
+                        // need to save related object because we set the relation to null
+                        $eventPosition->save($con);
+                    }
                     $this->eventPositionsScheduledForDeletion = null;
                 }
             }

@@ -14,8 +14,8 @@ class EventPositionType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder->add('title');
-        $builder->add('amount');
-        $builder->add('receiptPath');
+        $builder->add('amount', 'number', array('precision' => 2));
+//        $builder->add('receiptPath');
     }
 
     /**

@@ -594,7 +594,7 @@ abstract class BaseUserQuery extends ModelCriteria
      *
      * @return UserQuery The current query, for fluid interface
      */
-    public function joinEventPosition($relationAlias = null, $joinType = Criteria::INNER_JOIN)
+    public function joinEventPosition($relationAlias = null, $joinType = Criteria::LEFT_JOIN)
     {
         $tableMap = $this->getTableMap();
         $relationMap = $tableMap->getRelation('EventPosition');
@@ -629,7 +629,7 @@ abstract class BaseUserQuery extends ModelCriteria
      *
      * @return   \FUBerlin\ProjectBundle\Model\EventPositionQuery A secondary query class using the current class as primary query
      */
-    public function useEventPositionQuery($relationAlias = null, $joinType = Criteria::INNER_JOIN)
+    public function useEventPositionQuery($relationAlias = null, $joinType = Criteria::LEFT_JOIN)
     {
         return $this
             ->joinEventPosition($relationAlias, $joinType)

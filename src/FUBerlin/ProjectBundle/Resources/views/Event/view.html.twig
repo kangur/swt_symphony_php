@@ -1,0 +1,48 @@
+{% extends 'FUBerlinProjectBundle::base.html.twig' %}
+
+{% block content %}
+<h2>Event: {{ event.title }}</h2>
+<h3>Place: {{ event.place }}</h3>
+
+{% if not is_member %}
+<a href="{{path('event_join', {'id' :event.id})}}">Join this event</a>
+{% else %}
+Your balance for this event: {{ user_balance }}<br>
+<h3>Add new position </h3>
+<form action="{{ path('position_add', {'id' :event.id}) }}" method="post" {{ form_enctype(position_form) }}>
+    {{ form_widget(position_form) }}
+        <input type="submit" />
+    </form>
+{% endif %}
+
+
+{% if event.billed %}
+Event has already been billed
+{% else %}
+Click here to bill this item
+{% endif %}
+
+{% if positions %}
+    <h3>Positions: (total: {{event.eventPositionsTotal}} my: {{event.eventPositionsTotalForUser(app.user)}})</h3>
+    <ul>
+{% for position in positions %}
+            <li>{{position.title}} ({{position.amount}}) by {{position.user.username}}
+            {% if position.canBeDeletedByUser(app.user) %}
+                    <a href="{{path('position_delete', {'id' :position.id})}}">X</a>
+            {% endif %}
+            </li>
+{% endfor %}
+    </ul>
+{% endif %}
+    
+{% if members %}
+    <h3>Members:</h3>
+    <ul>
+{% for member in members %}
+            <li>{{member.username}} ({{member.firstName}} {{member.lastName}}) Balance: {{event.amountForUser(member)}}</li>
+{% endfor %}
+    </ul>
+{% endif %}
+
+
+{% endblock %}

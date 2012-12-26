@@ -21,7 +21,7 @@
         <column name="owner_id" type="integer"/>
         <column name="title" type="varchar" size="100" />
         <column name="place" type="varchar" size="100" />
-        <column name="require_receipt" type="boolean"/>
+        <column name="require_receipt" type="boolean" defaultValue="false" />
         <column name="billed" type="boolean" defaultValue="false" />
         <vendor type="mysql">
             <parameter name="Engine" value="InnoDB"/>
@@ -48,8 +48,9 @@
     </table>
     
     <table name="event_position">
-        <column name="user_id" type="integer" primaryKey="true" />
-        <column name="event_id" type="integer" primaryKey="true"/>
+        <column name="id" type="integer" required="true" primaryKey="true" autoIncrement="true" />
+        <column name="user_id" type="integer"/>
+        <column name="event_id" type="integer"/>
         <column name="title" type="varchar" size="100" />
         <column name="amount" type="decimal" scale="2" />
         <column name="receipt_path" type="varchar" size="255" />

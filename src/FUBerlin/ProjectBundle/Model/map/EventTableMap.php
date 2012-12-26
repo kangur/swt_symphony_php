@@ -46,7 +46,7 @@ class EventTableMap extends TableMap
         $this->addForeignKey('OWNER_ID', 'OwnerId', 'INTEGER', 'user', 'ID', false, null, null);
         $this->addColumn('TITLE', 'Title', 'VARCHAR', false, 100, null);
         $this->addColumn('PLACE', 'Place', 'VARCHAR', false, 100, null);
-        $this->addColumn('REQUIRE_RECEIPT', 'RequireReceipt', 'BOOLEAN', false, 1, null);
+        $this->addColumn('REQUIRE_RECEIPT', 'RequireReceipt', 'BOOLEAN', false, 1, false);
         $this->addColumn('BILLED', 'Billed', 'BOOLEAN', false, 1, false);
         // validators
     } // initialize()

@@ -19,12 +19,14 @@ use FUBerlin\ProjectBundle\Model\EventPositionQuery;
 use FUBerlin\ProjectBundle\Model\User;
 
 /**
+ * @method EventPositionQuery orderById($order = Criteria::ASC) Order by the id column
  * @method EventPositionQuery orderByUserId($order = Criteria::ASC) Order by the user_id column
  * @method EventPositionQuery orderByEventId($order = Criteria::ASC) Order by the event_id column
  * @method EventPositionQuery orderByTitle($order = Criteria::ASC) Order by the title column
  * @method EventPositionQuery orderByAmount($order = Criteria::ASC) Order by the amount column
  * @method EventPositionQuery orderByReceiptPath($order = Criteria::ASC) Order by the receipt_path column
  *
+ * @method EventPositionQuery groupById() Group by the id column
  * @method EventPositionQuery groupByUserId() Group by the user_id column
  * @method EventPositionQuery groupByEventId() Group by the event_id column
  * @method EventPositionQuery groupByTitle() Group by the title column
@@ -46,12 +48,14 @@ use FUBerlin\ProjectBundle\Model\User;
  * @method EventPosition findOne(PropelPDO $con = null) Return the first EventPosition matching the query
  * @method EventPosition findOneOrCreate(PropelPDO $con = null) Return the first EventPosition matching the query, or a new EventPosition object populated from the query conditions when no match is found
  *
+ * @method EventPosition findOneById(int $id) Return the first EventPosition filtered by the id column
  * @method EventPosition findOneByUserId(int $user_id) Return the first EventPosition filtered by the user_id column
  * @method EventPosition findOneByEventId(int $event_id) Return the first EventPosition filtered by the event_id column
  * @method EventPosition findOneByTitle(string $title) Return the first EventPosition filtered by the title column
  * @method EventPosition findOneByAmount(string $amount) Return the first EventPosition filtered by the amount column
  * @method EventPosition findOneByReceiptPath(string $receipt_path) Return the first EventPosition filtered by the receipt_path column
  *
+ * @method array findById(int $id) Return EventPosition objects filtered by the id column
  * @method array findByUserId(int $user_id) Return EventPosition objects filtered by the user_id column
  * @method array findByEventId(int $event_id) Return EventPosition objects filtered by the event_id column
  * @method array findByTitle(string $title) Return EventPosition objects filtered by the title column
@@ -102,11 +106,10 @@ abstract class BaseEventPositionQuery extends ModelCriteria
      * Go fast if the query is untouched.
      *
      * <code>
-     * $obj = $c->findPk(array(12, 34), $con);
+     * $obj  = $c->findPk(12, $con);
      * </code>
      *
-     * @param array $key Primary key to use for the query
-                         A Primary key composition: [$user_id, $event_id]
+     * @param mixed $key Primary key to use for the query
      * @param     PropelPDO $con an optional connection object
      *
      * @return   EventPosition|EventPosition[]|mixed the result, formatted by the current formatter
@@ -116,7 +119,7 @@ abstract class BaseEventPositionQuery extends ModelCriteria
         if ($key === null) {
             return null;
         }
-        if ((null !== ($obj = EventPositionPeer::getInstanceFromPool(serialize(array((string) $key[0], (string) $key[1]))))) && !$this->formatter) {
+        if ((null !== ($obj = EventPositionPeer::getInstanceFromPool((string) $key))) && !$this->formatter) {
             // the object is alredy in the instance pool
             return $obj;
         }
@@ -145,11 +148,10 @@ abstract class BaseEventPositionQuery extends ModelCriteria
      */
     protected function findPkSimple($key, $con)
     {
-        $sql = 'SELECT `USER_ID`, `EVENT_ID`, `TITLE`, `AMOUNT`, `RECEIPT_PATH` FROM `event_position` WHERE `USER_ID` = :p0 AND `EVENT_ID` = :p1';
+        $sql = 'SELECT `ID`, `USER_ID`, `EVENT_ID`, `TITLE`, `AMOUNT`, `RECEIPT_PATH` FROM `event_position` WHERE `ID` = :p0';
         try {
             $stmt = $con->prepare($sql);
-            $stmt->bindValue(':p0', $key[0], PDO::PARAM_INT);
-            $stmt->bindValue(':p1', $key[1], PDO::PARAM_INT);
+            $stmt->bindValue(':p0', $key, PDO::PARAM_INT);
             $stmt->execute();
         } catch (Exception $e) {
             Propel::log($e->getMessage(), Propel::LOG_ERR);
@@ -159,7 +161,7 @@ abstract class BaseEventPositionQuery extends ModelCriteria
         if ($row = $stmt->fetch(PDO::FETCH_NUM)) {
             $obj = new EventPosition();
             $obj->hydrate($row);
-            EventPositionPeer::addInstanceToPool($obj, serialize(array((string) $key[0], (string) $key[1])));
+            EventPositionPeer::addInstanceToPool($obj, (string) $key);
         }
         $stmt->closeCursor();
 
@@ -188,7 +190,7 @@ abstract class BaseEventPositionQuery extends ModelCriteria
     /**
      * Find objects by primary key
      * <code>
-     * $objs = $c->findPks(array(array(12, 56), array(832, 123), array(123, 456)), $con);
+     * $objs = $c->findPks(array(12, 56, 832), $con);
      * </code>
      * @param     array $keys Primary keys to use for the query
      * @param     PropelPDO $con an optional connection object
@@ -218,10 +220,8 @@ abstract class BaseEventPositionQuery extends ModelCriteria
      */
     public function filterByPrimaryKey($key)
     {
-        $this->addUsingAlias(EventPositionPeer::USER_ID, $key[0], Criteria::EQUAL);
-        $this->addUsingAlias(EventPositionPeer::EVENT_ID, $key[1], Criteria::EQUAL);
 
-        return $this;
+        return $this->addUsingAlias(EventPositionPeer::ID, $key, Criteria::EQUAL);
     }
 
     /**
@@ -233,17 +233,35 @@ abstract class BaseEventPositionQuery extends ModelCriteria
      */
     public function filterByPrimaryKeys($keys)
     {
-        if (empty($keys)) {
-            return $this->add(null, '1<>1', Criteria::CUSTOM);
-        }
-        foreach ($keys as $key) {
-            $cton0 = $this->getNewCriterion(EventPositionPeer::USER_ID, $key[0], Criteria::EQUAL);
-            $cton1 = $this->getNewCriterion(EventPositionPeer::EVENT_ID, $key[1], Criteria::EQUAL);
-            $cton0->addAnd($cton1);
-            $this->addOr($cton0);
+
+        return $this->addUsingAlias(EventPositionPeer::ID, $keys, Criteria::IN);
+    }
+
+    /**
+     * Filter the query on the id column
+     *
+     * Example usage:
+     * <code>
+     * $query->filterById(1234); // WHERE id = 1234
+     * $query->filterById(array(12, 34)); // WHERE id IN (12, 34)
+     * $query->filterById(array('min' => 12)); // WHERE id > 12
+     * </code>
+     *
+     * @param     mixed $id The value to use as filter.
+     *              Use scalar values for equality.
+     *              Use array values for in_array() equivalent.
+     *              Use associative array('min' => $minValue, 'max' => $maxValue) for intervals.
+     * @param     string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
+     *
+     * @return EventPositionQuery The current query, for fluid interface
+     */
+    public function filterById($id = null, $comparison = null)
+    {
+        if (is_array($id) && null === $comparison) {
+            $comparison = Criteria::IN;
         }
 
-        return $this;
+        return $this->addUsingAlias(EventPositionPeer::ID, $id, $comparison);
     }
 
     /**
@@ -268,8 +286,22 @@ abstract class BaseEventPositionQuery extends ModelCriteria
      */
     public function filterByUserId($userId = null, $comparison = null)
     {
-        if (is_array($userId) && null === $comparison) {
-            $comparison = Criteria::IN;
+        if (is_array($userId)) {
+            $useMinMax = false;
+            if (isset($userId['min'])) {
+                $this->addUsingAlias(EventPositionPeer::USER_ID, $userId['min'], Criteria::GREATER_EQUAL);
+                $useMinMax = true;
+            }
+            if (isset($userId['max'])) {
+                $this->addUsingAlias(EventPositionPeer::USER_ID, $userId['max'], Criteria::LESS_EQUAL);
+                $useMinMax = true;
+            }
+            if ($useMinMax) {
+                return $this;
+            }
+            if (null === $comparison) {
+                $comparison = Criteria::IN;
+            }
         }
 
         return $this->addUsingAlias(EventPositionPeer::USER_ID, $userId, $comparison);
@@ -297,8 +329,22 @@ abstract class BaseEventPositionQuery extends ModelCriteria
      */
     public function filterByEventId($eventId = null, $comparison = null)
     {
-        if (is_array($eventId) && null === $comparison) {
-            $comparison = Criteria::IN;
+        if (is_array($eventId)) {
+            $useMinMax = false;
+            if (isset($eventId['min'])) {
+                $this->addUsingAlias(EventPositionPeer::EVENT_ID, $eventId['min'], Criteria::GREATER_EQUAL);
+                $useMinMax = true;
+            }
+            if (isset($eventId['max'])) {
+                $this->addUsingAlias(EventPositionPeer::EVENT_ID, $eventId['max'], Criteria::LESS_EQUAL);
+                $useMinMax = true;
+            }
+            if ($useMinMax) {
+                return $this;
+            }
+            if (null === $comparison) {
+                $comparison = Criteria::IN;
+            }
         }
 
         return $this->addUsingAlias(EventPositionPeer::EVENT_ID, $eventId, $comparison);
@@ -437,7 +483,7 @@ abstract class BaseEventPositionQuery extends ModelCriteria
      *
      * @return EventPositionQuery The current query, for fluid interface
      */
-    public function joinUser($relationAlias = null, $joinType = Criteria::INNER_JOIN)
+    public function joinUser($relationAlias = null, $joinType = Criteria::LEFT_JOIN)
     {
         $tableMap = $this->getTableMap();
         $relationMap = $tableMap->getRelation('User');
@@ -472,7 +518,7 @@ abstract class BaseEventPositionQuery extends ModelCriteria
      *
      * @return   \FUBerlin\ProjectBundle\Model\UserQuery A secondary query class using the current class as primary query
      */
-    public function useUserQuery($relationAlias = null, $joinType = Criteria::INNER_JOIN)
+    public function useUserQuery($relationAlias = null, $joinType = Criteria::LEFT_JOIN)
     {
         return $this
             ->joinUser($relationAlias, $joinType)
@@ -513,7 +559,7 @@ abstract class BaseEventPositionQuery extends ModelCriteria
      *
      * @return EventPositionQuery The current query, for fluid interface
      */
-    public function joinEvent($relationAlias = null, $joinType = Criteria::INNER_JOIN)
+    public function joinEvent($relationAlias = null, $joinType = Criteria::LEFT_JOIN)
     {
         $tableMap = $this->getTableMap();
         $relationMap = $tableMap->getRelation('Event');
@@ -548,7 +594,7 @@ abstract class BaseEventPositionQuery extends ModelCriteria
      *
      * @return   \FUBerlin\ProjectBundle\Model\EventQuery A secondary query class using the current class as primary query
      */
-    public function useEventQuery($relationAlias = null, $joinType = Criteria::INNER_JOIN)
+    public function useEventQuery($relationAlias = null, $joinType = Criteria::LEFT_JOIN)
     {
         return $this
             ->joinEvent($relationAlias, $joinType)
@@ -565,9 +611,7 @@ abstract class BaseEventPositionQuery extends ModelCriteria
     public function prune($eventPosition = null)
     {
         if ($eventPosition) {
-            $this->addCond('pruneCond0', $this->getAliasedColName(EventPositionPeer::USER_ID), $eventPosition->getUserId(), Criteria::NOT_EQUAL);
-            $this->addCond('pruneCond1', $this->getAliasedColName(EventPositionPeer::EVENT_ID), $eventPosition->getEventId(), Criteria::NOT_EQUAL);
-            $this->combine(array('pruneCond0', 'pruneCond1'), Criteria::LOGICAL_OR);
+            $this->addUsingAlias(EventPositionPeer::ID, $eventPosition->getId(), Criteria::NOT_EQUAL);
         }
 
         return $this;

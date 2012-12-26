@@ -623,9 +623,10 @@ abstract class BaseUser extends BaseObject implements Persistent
 
             if ($this->eventPositionsScheduledForDeletion !== null) {
                 if (!$this->eventPositionsScheduledForDeletion->isEmpty()) {
-                    EventPositionQuery::create()
-                        ->filterByPrimaryKeys($this->eventPositionsScheduledForDeletion->getPrimaryKeys(false))
-                        ->delete($con);
+                    foreach ($this->eventPositionsScheduledForDeletion as $eventPosition) {
+                        // need to save related object because we set the relation to null
+                        $eventPosition->save($con);
+                    }
                     $this->eventPositionsScheduledForDeletion = null;
                 }
             }
