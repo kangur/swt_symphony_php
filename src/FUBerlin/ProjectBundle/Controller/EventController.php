@@ -68,6 +68,24 @@ class EventController extends Controller {
             return $this->redirect($this->generateUrl('event_view', array('id' => $event->getId())));
         }
     }
+    
+    /**
+     * @Route("/event/bill/{id}", name="event_bill")
+     */
+    public function billEventAction($id) {
+        /* @var $event \FUBerlin\ProjectBundle\Model\Event */
+        
+        $user = $this->get('security.context')->getToken()->getUser();
+        
+        $event = \FUBerlin\ProjectBundle\Model\EventQuery::create()->filterByOwnerUser($user)->findOneById($id);
+        if (!$event) {
+            throw $this->createNotFoundException('Event not found!');
+        } else {
+            $event->setBilled(true);
+            $event->save();
+            return $this->redirect($this->generateUrl('event_view', array('id' => $event->getId())));
+        }
+    }
 
     /**
      * @Route("/event/delete_position/{id}", name="position_delete")
@@ -96,11 +114,14 @@ class EventController extends Controller {
             throw $this->createNotFoundException('Event not found!');
         } else {
             if ($event->getBilled()) {
-                throw new Exception('Event is already billed');
+                throw new \Exception('Event is already billed');
+            }
+            if (!$event->isMember($user)){
+                throw new \Excepction('User is not a member of this event');
             }
             $request = $this->getRequest();
             if ($request->isMethod('POST')) {
-
+                
                 $eventPosition = new \FUBerlin\ProjectBundle\Model\EventPosition();
                 $eventPosition->setEvent($event);
                 $eventPosition->setUser($user);
