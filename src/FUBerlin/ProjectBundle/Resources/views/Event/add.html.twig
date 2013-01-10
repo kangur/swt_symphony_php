@@ -2,11 +2,17 @@
 
 {% block content %}
 
-<form action="{{ path('event_add') }}" method="post" {{ form_enctype(form) }}>
-    {{ form_widget(form) }}
+<form class="form-horizontal well" action="{{ path('event_add') }}" method="post" {{ form_enctype(form) }}>
+    <fieldset>
+        <legend>Add Event</legend>
+    
+        {{ form_widget(form) }}
 
-    <button type="submit" class="btn btn-large btn-primary">
-        Send
-    </button>
+        <div class="form-actions">
+            <button class="btn btn-primary" type="submit">Add</button>
+            <button class="btn" type="reset">Cancel</button>
+        </div>
+        
+    </fieldset>
 </form>
 {% endblock %}
