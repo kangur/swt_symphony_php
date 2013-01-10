@@ -21,7 +21,9 @@ Your balance for this event: {{ user_balance }}<br>
 <h3>Add new position </h3>
 <form action="{{ path('position_add', {'id' :event.id}) }}" method="post" {{ form_enctype(position_form) }}>
     {{ form_widget(position_form) }}
-        <input type="submit" />
+        <button type="submit" class="btn btn-large btn-primary">
+            Send
+        </button>
     </form>
 {% endif %}
 {% endif %}

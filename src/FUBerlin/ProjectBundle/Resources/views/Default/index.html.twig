@@ -1,13 +1,38 @@
 {% extends 'FUBerlinProjectBundle::base.html.twig' %}
 
 {% block content %}
-Hello!
+
 {% if app.user %}
 <h2>Tools:</h2>
     <a href="{{ path('event_add') }}">Add an event</a>
 <h2>My events:</h2>
 {% else %}
-    <h2>Recent events:</h2>
+
+<div class="hero-unit">
+    <h1>Abrechner3000!</h1>
+    <p>
+        You have an event and many peoples with different expenses? So you definitively need Abrechner3000!!!
+    </p>
+    <p>
+        <a href="{{ path('register') }}" class="btn btn-primary btn-large">Register</a>
+    </p>
+</div>
+<div class="row">
+    <div class="span8">
+        <h2>Recent events:</h2>
+    </div>
+    <div class="span4">
+        <form action="{{ path('login_check') }}" class="form-signin" method="post">
+            <h2 class="form-signin-heading">Please sign in</h2>
+            <input type="text" placeholder="Username" name="_username" class="input-block-level">
+            <input type="password" placeholder="Password" name="_password" class="input-block-level">
+            <button type="submit" class="btn btn-large btn-primary">
+                login
+            </button>
+        </form>
+    </div>
+</div>
+
 {% endif %}
     
 {% endblock %}
