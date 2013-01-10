@@ -23,7 +23,7 @@
 <div class="row">
     <div class="span7">
         
-        {% if positions %}
+        {% if positions.count > 0 %}
 
         <div class="">
             <legend>Positions <small>(total: {{event.eventPositionsTotal}} {% if is_member %}my: {{event.eventPositionsTotalForUser(app.user)}} {% endif %})</small></legend>

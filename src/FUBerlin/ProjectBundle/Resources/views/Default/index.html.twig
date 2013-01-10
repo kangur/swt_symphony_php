@@ -3,19 +3,40 @@
 {% block content %}
 
 {% if app.user %}
-<h2>Tools:</h2>
-    <a href="{{ path('event_add') }}">Add an event</a>
-<h2>My recent events:</h2>
-{% if events.count > 0 %}
-<ul>
-{% for event in events %}
-        <li><a href="{{ path('event_view', {'id' :event.id}) }}"> {{event.title}}</a></li>
-{% endfor %}
-</ul>
-{% else %}
-<h2>You don't have any events yet</h2>
-{% endif %}
 
+<div class="page-header">
+    <h1>Hello, {{ app.user.username }}</h1>
+</div>
+
+<div class="row">
+    <div class="span7">
+        <legend>My events</legend>
+        <div style="padding: 8px 0;" class="well">
+            <ul class="nav nav-list">
+                <li class="nav-header">Open events</li>
+                    {% if events.count > 0 %}
+                        {% for event in events %}
+                            <li><a href="{{ path('event_view', {'id' :event.id}) }}"> {{event.title}}</a></li>
+                        {% endfor %}
+                    {% else %}
+                        <li class="disabled">You don't have any events yet</li>
+                    {% endif %}
+                <li class="nav-header">Closed events</li>
+                <li>-</li>
+                <li class="divider"></li>
+                <li>-</li>
+            </ul>
+        </div>
+    </div>
+    <div class="span5">
+        <legend>Tools</legend>
+        <div style="max-width: 400px; margin: 0 auto 10px;" class="well">
+            <a href="{{ path('event_add') }}" class="btn btn-large btn-block btn-success"><i class="icon-glass icon-white"></i> Add an event</a>
+            <a href="" class="btn btn-large btn-block btn-warning"><i class="icon-search icon-white"></i> anything</a>
+            <a href="" class="btn btn-large btn-block btn-danger"><i class="icon-trash icon-white"></i> else</a>
+        </div>
+    </div>
+</div>
 
 {% else %}
 
