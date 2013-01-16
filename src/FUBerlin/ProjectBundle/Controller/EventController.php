@@ -11,6 +11,11 @@ use \FUBerlin\ProjectBundle\Model\Event;
 
 class EventController extends Controller {
 
+    private function showError($errorMessage) {
+        return $this->render(
+                        'FUBerlinProjectBundle:Event:error.html.twig', array('errorMessage' => $errorMessage));
+    }
+
     /**
      * @Route("/event/add", name="event_add")
      */
@@ -32,6 +37,36 @@ class EventController extends Controller {
     }
 
     /**
+     * @Route("/my_billed_positions", name="event_billed_positions_view")
+     */
+    public function viewBilledPositionsAction() {
+        $user = $this->get('security.context')->getToken()->getUser();
+        $positions = \FUBerlin\ProjectBundle\Model\EventBillingPositionQuery::create()->filterByUser($user)->find();
+        return $this->render(
+                        'FUBerlinProjectBundle:Event:billedpositions.html.twig', array('positions' => $positions));
+    }
+
+    /**
+     * @Route("/position/pay/{id}", name="event_mark_position_as_paid")
+     */
+    public function markPositionAsPaidAction($id) {
+        $user = $this->get('security.context')->getToken()->getUser();
+        $position = \FUBerlin\ProjectBundle\Model\EventBillingPositionQuery::create()->findOneById($id);
+        /* @var $position \FUBerlin\ProjectBundle\Model\EventBillingPosition */
+        if (!$position) {
+            return $this->showError('Position not found');
+        } else if ($position->getUser() != $user) {
+            return $this->showError('Position does not belong to you');
+        } else {
+            $position->setPaid(true);
+            $position->save();
+            return $this->redirect($this->generateUrl('event_billed_positions_view'));
+        }
+        return $this->render(
+                        'FUBerlinProjectBundle:Event:billedpositions.html.twig', array('positions' => $positions));
+    }
+
+    /**
      * @Route("/event/view/{id}", name="event_view")
      */
     public function viewEventAction($id) {
@@ -39,7 +74,7 @@ class EventController extends Controller {
         $event = \FUBerlin\ProjectBundle\Model\EventQuery::create()->findOneById($id);
         $user = $this->get('security.context')->getToken()->getUser();
         if (!$event) {
-            throw $this->createNotFoundException('Event not found!');
+            return $this->showError('Event not found!');
         } else {
             $positionForm = $this->createForm(new \FUBerlin\ProjectBundle\Form\Type\EventPositionType);
 
@@ -77,7 +112,10 @@ class EventController extends Controller {
         $event = \FUBerlin\ProjectBundle\Model\EventQuery::create()->findOneById($id);
         $user = $this->get('security.context')->getToken()->getUser();
         if (!$event) {
-            throw $this->createNotFoundException('Event not found!');
+            return $this->showError('Event not found!');
+            //throw $this->createNotFoundException('Event not found!');
+        } else if (\FUBerlin\ProjectBundle\Model\EventMemberQuery::create()->filterByMemberUser($user)->filterByEvent($event)->count() > 0) {
+            return $this->showError('You are already a member of this event');
         } else {
             $event->addMemberUser($user);
             $event->save();
@@ -95,10 +133,10 @@ class EventController extends Controller {
 
         $event = \FUBerlin\ProjectBundle\Model\EventQuery::create()->filterByOwnerUser($user)->findOneById($id);
         if (!$event) {
-            throw $this->createNotFoundException('Event not found!');
+            return $this->showError('Event not found!');
         } else {
-            if ($event->getBilled()){
-                throw new \Exception('Event is already billed!');
+            if ($event->getBilled()) {
+                return $this->showError('Event is already billed');
             }
             $event->setBilled(true);
             $event->save();
@@ -113,7 +151,7 @@ class EventController extends Controller {
             }
 
 
-            
+
             return $this->redirect($this->generateUrl('event_view', array('id' => $event->getId())));
         }
     }
@@ -125,7 +163,7 @@ class EventController extends Controller {
         $position = \FUBerlin\ProjectBundle\Model\EventPositionQuery::create()->findOneById($id);
         $user = $this->get('security.context')->getToken()->getUser();
         if (!$position) {
-            throw $this->createNotFoundException('Event not found!');
+            return $this->showError('Event not found!');
         } else {
             if ($position->canBeDeletedByUser($user)) {
                 $position->delete();
@@ -142,11 +180,13 @@ class EventController extends Controller {
         $user = $this->get('security.context')->getToken()->getUser();
         /* @var $comment \FUBerlin\ProjectBundle\Model\EventComment */
         if (!$comment) {
-            throw $this->createNotFoundException('Event not found!');
+            return $this->showError('Event not found!');
         } else {
             if ($comment->canBeDeletedByUser($user)) {
                 $comment->delete();
                 return $this->redirect($this->generateUrl('event_view', array('id' => $comment->getEvent()->getId())));
+            } else {
+                return $this->showError('You can\'t delete this comment!');
             }
         }
     }
@@ -159,10 +199,10 @@ class EventController extends Controller {
         $event = \FUBerlin\ProjectBundle\Model\EventQuery::create()->findOneById($id);
         $user = $this->get('security.context')->getToken()->getUser();
         if (!$event) {
-            throw $this->createNotFoundException('Event not found!');
+            return $this->showError('Event not found!');
         } else {
             if (!$event->isMember($user)) {
-                throw new \Excepction('User is not a member of this event');
+                return $this->showError('You are not a member of this event!');
             }
             $request = $this->getRequest();
             if ($request->isMethod('POST')) {
@@ -188,13 +228,13 @@ class EventController extends Controller {
         $event = \FUBerlin\ProjectBundle\Model\EventQuery::create()->findOneById($id);
         $user = $this->get('security.context')->getToken()->getUser();
         if (!$event) {
-            throw $this->createNotFoundException('Event not found!');
+            return $this->showError('Event not found!');
         } else {
             if ($event->getBilled()) {
-                throw new \Exception('Event is already billed');
+                return $this->showError('Event is already billed!');
             }
             if (!$event->isMember($user)) {
-                throw new \Excepction('User is not a member of this event');
+                return $this->showError('You are not a member of this event!');
             }
             $request = $this->getRequest();
             if ($request->isMethod('POST')) {
