@@ -59,6 +59,8 @@ class EventTableMap extends TableMap
         $this->addRelation('OwnerUser', 'FUBerlin\\ProjectBundle\\Model\\User', RelationMap::MANY_TO_ONE, array('owner_id' => 'id', ), 'CASCADE', 'CASCADE');
         $this->addRelation('EventMember', 'FUBerlin\\ProjectBundle\\Model\\EventMember', RelationMap::ONE_TO_MANY, array('id' => 'event_id', ), 'CASCADE', 'CASCADE', 'EventMembers');
         $this->addRelation('EventPosition', 'FUBerlin\\ProjectBundle\\Model\\EventPosition', RelationMap::ONE_TO_MANY, array('id' => 'event_id', ), 'CASCADE', 'CASCADE', 'EventPositions');
+        $this->addRelation('EventComment', 'FUBerlin\\ProjectBundle\\Model\\EventComment', RelationMap::ONE_TO_MANY, array('id' => 'event_id', ), 'CASCADE', 'CASCADE', 'EventComments');
+        $this->addRelation('EventBillingPosition', 'FUBerlin\\ProjectBundle\\Model\\EventBillingPosition', RelationMap::ONE_TO_MANY, array('id' => 'event_id', ), 'CASCADE', 'CASCADE', 'EventBillingPositions');
         $this->addRelation('MemberUser', 'FUBerlin\\ProjectBundle\\Model\\User', RelationMap::MANY_TO_MANY, array(), 'CASCADE', 'CASCADE', 'MemberUsers');
     } // buildRelations()
 

@@ -40,7 +40,7 @@ class Event extends BaseEvent {
         return round($userTotal-$totalPerUser,2);
     }
 
-    public function isMember(\FUBerlin\ProjectBundle\Model\User $user) {
+    public function isMember(\FUBerlin\ProjectBundle\Model\User $user = null) {
         return ($this->getOwnerUser() == $user) || (EventMemberQuery::create()->filterByEvent($this)->filterByMemberUser($user)->count() > 0);
     }
 

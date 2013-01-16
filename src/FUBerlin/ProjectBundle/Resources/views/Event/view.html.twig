@@ -30,26 +30,52 @@ Your balance for this event: {{ user_balance }}<br>
 
 
 {% if positions %}
-    <h3>Positions: (total: {{event.eventPositionsTotal}} my: {{event.eventPositionsTotalForUser(app.user)}})</h3>
+    <h3>Positions: (total: {{event.eventPositionsTotal}} {% if is_member %}my: {{event.eventPositionsTotalForUser(app.user)}} {% endif %})</h3>
     <ul>
 {% for position in positions %}
             <li>{{position.title}} ({{position.amount}}) by {{position.user.username}}
             {% if position.canBeDeletedByUser(app.user) %}
                     <a href="{{path('position_delete', {'id' :position.id})}}">X</a>
             {% endif %}
-            </li>
+                </li>
 {% endfor %}
-    </ul>
+            </ul>
 {% endif %}
-    
+
 {% if members %}
-    <h3>Members:</h3>
-    <ul>
+            <h3>Members:</h3>
+            <ul>
 {% for member in members %}
-            <li>{{member.username}} ({{member.firstName}} {{member.lastName}}) Balance: {{event.amountForUser(member)}}</li>
+                    <li>{{member.username}} ({{member.firstName}} {{member.lastName}}) Balance: {{event.amountForUser(member)}}</li>
 {% endfor %}
-    </ul>
+                </ul>
+{% endif %}
+
+{% if comments %}
+                <h3>Comments:</h3>
+                <ul>
+{% for comment in comments %}
+                        <li>{{comment.user.username}} wrote on {{comment.timestamp|date("d.m.Y H:m:s")}}:
+                        <p>{{comment.comment}}</p>
+                        {% if comment.canBeDeletedByUser(app.user) %}
+                             <a href="{{path('comment_delete', {'id' :comment.id})}}">Delete comment</a>
+                        {% endif %}
+                        
+                        </li>
+{% endfor %}
+                    </ul>
 {% endif %}
 
 
+
+            {% if is_member %}
+
+                    <form action="{{ path('comment_add', {'id' :event.id}) }}" method="post" {{ form_enctype(comment_form) }}>
+    {{ form_widget(comment_form) }}
+                            <button type="submit" class="btn btn-large btn-primary">
+                                Send
+                            </button>
+                        </form>
+
+            {% endif %}
 {% endblock %}

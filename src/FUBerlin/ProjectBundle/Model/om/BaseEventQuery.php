@@ -13,6 +13,8 @@ use \PropelException;
 use \PropelObjectCollection;
 use \PropelPDO;
 use FUBerlin\ProjectBundle\Model\Event;
+use FUBerlin\ProjectBundle\Model\EventBillingPosition;
+use FUBerlin\ProjectBundle\Model\EventComment;
 use FUBerlin\ProjectBundle\Model\EventMember;
 use FUBerlin\ProjectBundle\Model\EventPeer;
 use FUBerlin\ProjectBundle\Model\EventPosition;
@@ -49,6 +51,14 @@ use FUBerlin\ProjectBundle\Model\User;
  * @method EventQuery leftJoinEventPosition($relationAlias = null) Adds a LEFT JOIN clause to the query using the EventPosition relation
  * @method EventQuery rightJoinEventPosition($relationAlias = null) Adds a RIGHT JOIN clause to the query using the EventPosition relation
  * @method EventQuery innerJoinEventPosition($relationAlias = null) Adds a INNER JOIN clause to the query using the EventPosition relation
+ *
+ * @method EventQuery leftJoinEventComment($relationAlias = null) Adds a LEFT JOIN clause to the query using the EventComment relation
+ * @method EventQuery rightJoinEventComment($relationAlias = null) Adds a RIGHT JOIN clause to the query using the EventComment relation
+ * @method EventQuery innerJoinEventComment($relationAlias = null) Adds a INNER JOIN clause to the query using the EventComment relation
+ *
+ * @method EventQuery leftJoinEventBillingPosition($relationAlias = null) Adds a LEFT JOIN clause to the query using the EventBillingPosition relation
+ * @method EventQuery rightJoinEventBillingPosition($relationAlias = null) Adds a RIGHT JOIN clause to the query using the EventBillingPosition relation
+ * @method EventQuery innerJoinEventBillingPosition($relationAlias = null) Adds a INNER JOIN clause to the query using the EventBillingPosition relation
  *
  * @method Event findOne(PropelPDO $con = null) Return the first Event matching the query
  * @method Event findOneOrCreate(PropelPDO $con = null) Return the first Event matching the query, or a new Event object populated from the query conditions when no match is found
@@ -646,6 +656,154 @@ abstract class BaseEventQuery extends ModelCriteria
         return $this
             ->joinEventPosition($relationAlias, $joinType)
             ->useQuery($relationAlias ? $relationAlias : 'EventPosition', '\FUBerlin\ProjectBundle\Model\EventPositionQuery');
+    }
+
+    /**
+     * Filter the query by a related EventComment object
+     *
+     * @param   EventComment|PropelObjectCollection $eventComment  the related object to use as filter
+     * @param     string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
+     *
+     * @return   EventQuery The current query, for fluid interface
+     * @throws   PropelException - if the provided filter is invalid.
+     */
+    public function filterByEventComment($eventComment, $comparison = null)
+    {
+        if ($eventComment instanceof EventComment) {
+            return $this
+                ->addUsingAlias(EventPeer::ID, $eventComment->getEventId(), $comparison);
+        } elseif ($eventComment instanceof PropelObjectCollection) {
+            return $this
+                ->useEventCommentQuery()
+                ->filterByPrimaryKeys($eventComment->getPrimaryKeys())
+                ->endUse();
+        } else {
+            throw new PropelException('filterByEventComment() only accepts arguments of type EventComment or PropelCollection');
+        }
+    }
+
+    /**
+     * Adds a JOIN clause to the query using the EventComment relation
+     *
+     * @param     string $relationAlias optional alias for the relation
+     * @param     string $joinType Accepted values are null, 'left join', 'right join', 'inner join'
+     *
+     * @return EventQuery The current query, for fluid interface
+     */
+    public function joinEventComment($relationAlias = null, $joinType = Criteria::LEFT_JOIN)
+    {
+        $tableMap = $this->getTableMap();
+        $relationMap = $tableMap->getRelation('EventComment');
+
+        // create a ModelJoin object for this join
+        $join = new ModelJoin();
+        $join->setJoinType($joinType);
+        $join->setRelationMap($relationMap, $this->useAliasInSQL ? $this->getModelAlias() : null, $relationAlias);
+        if ($previousJoin = $this->getPreviousJoin()) {
+            $join->setPreviousJoin($previousJoin);
+        }
+
+        // add the ModelJoin to the current object
+        if ($relationAlias) {
+            $this->addAlias($relationAlias, $relationMap->getRightTable()->getName());
+            $this->addJoinObject($join, $relationAlias);
+        } else {
+            $this->addJoinObject($join, 'EventComment');
+        }
+
+        return $this;
+    }
+
+    /**
+     * Use the EventComment relation EventComment object
+     *
+     * @see       useQuery()
+     *
+     * @param     string $relationAlias optional alias for the relation,
+     *                                   to be used as main alias in the secondary query
+     * @param     string $joinType Accepted values are null, 'left join', 'right join', 'inner join'
+     *
+     * @return   \FUBerlin\ProjectBundle\Model\EventCommentQuery A secondary query class using the current class as primary query
+     */
+    public function useEventCommentQuery($relationAlias = null, $joinType = Criteria::LEFT_JOIN)
+    {
+        return $this
+            ->joinEventComment($relationAlias, $joinType)
+            ->useQuery($relationAlias ? $relationAlias : 'EventComment', '\FUBerlin\ProjectBundle\Model\EventCommentQuery');
+    }
+
+    /**
+     * Filter the query by a related EventBillingPosition object
+     *
+     * @param   EventBillingPosition|PropelObjectCollection $eventBillingPosition  the related object to use as filter
+     * @param     string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
+     *
+     * @return   EventQuery The current query, for fluid interface
+     * @throws   PropelException - if the provided filter is invalid.
+     */
+    public function filterByEventBillingPosition($eventBillingPosition, $comparison = null)
+    {
+        if ($eventBillingPosition instanceof EventBillingPosition) {
+            return $this
+                ->addUsingAlias(EventPeer::ID, $eventBillingPosition->getEventId(), $comparison);
+        } elseif ($eventBillingPosition instanceof PropelObjectCollection) {
+            return $this
+                ->useEventBillingPositionQuery()
+                ->filterByPrimaryKeys($eventBillingPosition->getPrimaryKeys())
+                ->endUse();
+        } else {
+            throw new PropelException('filterByEventBillingPosition() only accepts arguments of type EventBillingPosition or PropelCollection');
+        }
+    }
+
+    /**
+     * Adds a JOIN clause to the query using the EventBillingPosition relation
+     *
+     * @param     string $relationAlias optional alias for the relation
+     * @param     string $joinType Accepted values are null, 'left join', 'right join', 'inner join'
+     *
+     * @return EventQuery The current query, for fluid interface
+     */
+    public function joinEventBillingPosition($relationAlias = null, $joinType = Criteria::LEFT_JOIN)
+    {
+        $tableMap = $this->getTableMap();
+        $relationMap = $tableMap->getRelation('EventBillingPosition');
+
+        // create a ModelJoin object for this join
+        $join = new ModelJoin();
+        $join->setJoinType($joinType);
+        $join->setRelationMap($relationMap, $this->useAliasInSQL ? $this->getModelAlias() : null, $relationAlias);
+        if ($previousJoin = $this->getPreviousJoin()) {
+            $join->setPreviousJoin($previousJoin);
+        }
+
+        // add the ModelJoin to the current object
+        if ($relationAlias) {
+            $this->addAlias($relationAlias, $relationMap->getRightTable()->getName());
+            $this->addJoinObject($join, $relationAlias);
+        } else {
+            $this->addJoinObject($join, 'EventBillingPosition');
+        }
+
+        return $this;
+    }
+
+    /**
+     * Use the EventBillingPosition relation EventBillingPosition object
+     *
+     * @see       useQuery()
+     *
+     * @param     string $relationAlias optional alias for the relation,
+     *                                   to be used as main alias in the secondary query
+     * @param     string $joinType Accepted values are null, 'left join', 'right join', 'inner join'
+     *
+     * @return   \FUBerlin\ProjectBundle\Model\EventBillingPositionQuery A secondary query class using the current class as primary query
+     */
+    public function useEventBillingPositionQuery($relationAlias = null, $joinType = Criteria::LEFT_JOIN)
+    {
+        return $this
+            ->joinEventBillingPosition($relationAlias, $joinType)
+            ->useQuery($relationAlias ? $relationAlias : 'EventBillingPosition', '\FUBerlin\ProjectBundle\Model\EventBillingPositionQuery');
     }
 
     /**

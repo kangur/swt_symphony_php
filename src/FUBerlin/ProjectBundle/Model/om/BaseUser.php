@@ -14,6 +14,10 @@ use \PropelException;
 use \PropelObjectCollection;
 use \PropelPDO;
 use FUBerlin\ProjectBundle\Model\Event;
+use FUBerlin\ProjectBundle\Model\EventBillingPosition;
+use FUBerlin\ProjectBundle\Model\EventBillingPositionQuery;
+use FUBerlin\ProjectBundle\Model\EventComment;
+use FUBerlin\ProjectBundle\Model\EventCommentQuery;
 use FUBerlin\ProjectBundle\Model\EventMember;
 use FUBerlin\ProjectBundle\Model\EventMemberQuery;
 use FUBerlin\ProjectBundle\Model\EventPosition;
@@ -99,6 +103,18 @@ abstract class BaseUser extends BaseObject implements Persistent
     protected $collEventPositionsPartial;
 
     /**
+     * @var        PropelObjectCollection|EventComment[] Collection to store aggregation of EventComment objects.
+     */
+    protected $collEventComments;
+    protected $collEventCommentsPartial;
+
+    /**
+     * @var        PropelObjectCollection|EventBillingPosition[] Collection to store aggregation of EventBillingPosition objects.
+     */
+    protected $collEventBillingPositions;
+    protected $collEventBillingPositionsPartial;
+
+    /**
      * @var        PropelObjectCollection|Event[] Collection to store aggregation of Event objects.
      */
     protected $collEvents;
@@ -140,6 +156,18 @@ abstract class BaseUser extends BaseObject implements Persistent
      * @var		PropelObjectCollection
      */
     protected $eventPositionsScheduledForDeletion = null;
+
+    /**
+     * An array of objects scheduled for deletion.
+     * @var		PropelObjectCollection
+     */
+    protected $eventCommentsScheduledForDeletion = null;
+
+    /**
+     * An array of objects scheduled for deletion.
+     * @var		PropelObjectCollection
+     */
+    protected $eventBillingPositionsScheduledForDeletion = null;
 
     /**
      * Get the [id] column value.
@@ -441,6 +469,10 @@ abstract class BaseUser extends BaseObject implements Persistent
 
             $this->collEventPositions = null;
 
+            $this->collEventComments = null;
+
+            $this->collEventBillingPositions = null;
+
             $this->collEvents = null;
         } // if (deep)
     }
@@ -633,6 +665,42 @@ abstract class BaseUser extends BaseObject implements Persistent
 
             if ($this->collEventPositions !== null) {
                 foreach ($this->collEventPositions as $referrerFK) {
+                    if (!$referrerFK->isDeleted()) {
+                        $affectedRows += $referrerFK->save($con);
+                    }
+                }
+            }
+
+            if ($this->eventCommentsScheduledForDeletion !== null) {
+                if (!$this->eventCommentsScheduledForDeletion->isEmpty()) {
+                    foreach ($this->eventCommentsScheduledForDeletion as $eventComment) {
+                        // need to save related object because we set the relation to null
+                        $eventComment->save($con);
+                    }
+                    $this->eventCommentsScheduledForDeletion = null;
+                }
+            }
+
+            if ($this->collEventComments !== null) {
+                foreach ($this->collEventComments as $referrerFK) {
+                    if (!$referrerFK->isDeleted()) {
+                        $affectedRows += $referrerFK->save($con);
+                    }
+                }
+            }
+
+            if ($this->eventBillingPositionsScheduledForDeletion !== null) {
+                if (!$this->eventBillingPositionsScheduledForDeletion->isEmpty()) {
+                    foreach ($this->eventBillingPositionsScheduledForDeletion as $eventBillingPosition) {
+                        // need to save related object because we set the relation to null
+                        $eventBillingPosition->save($con);
+                    }
+                    $this->eventBillingPositionsScheduledForDeletion = null;
+                }
+            }
+
+            if ($this->collEventBillingPositions !== null) {
+                foreach ($this->collEventBillingPositions as $referrerFK) {
                     if (!$referrerFK->isDeleted()) {
                         $affectedRows += $referrerFK->save($con);
                     }
@@ -835,6 +903,22 @@ abstract class BaseUser extends BaseObject implements Persistent
                     }
                 }
 
+                if ($this->collEventComments !== null) {
+                    foreach ($this->collEventComments as $referrerFK) {
+                        if (!$referrerFK->validate($columns)) {
+                            $failureMap = array_merge($failureMap, $referrerFK->getValidationFailures());
+                        }
+                    }
+                }
+
+                if ($this->collEventBillingPositions !== null) {
+                    foreach ($this->collEventBillingPositions as $referrerFK) {
+                        if (!$referrerFK->validate($columns)) {
+                            $failureMap = array_merge($failureMap, $referrerFK->getValidationFailures());
+                        }
+                    }
+                }
+
 
             $this->alreadyInValidation = false;
         }
@@ -933,6 +1017,12 @@ abstract class BaseUser extends BaseObject implements Persistent
             }
             if (null !== $this->collEventPositions) {
                 $result['EventPositions'] = $this->collEventPositions->toArray(null, true, $keyType, $includeLazyLoadColumns, $alreadyDumpedObjects);
+            }
+            if (null !== $this->collEventComments) {
+                $result['EventComments'] = $this->collEventComments->toArray(null, true, $keyType, $includeLazyLoadColumns, $alreadyDumpedObjects);
+            }
+            if (null !== $this->collEventBillingPositions) {
+                $result['EventBillingPositions'] = $this->collEventBillingPositions->toArray(null, true, $keyType, $includeLazyLoadColumns, $alreadyDumpedObjects);
             }
         }
 
@@ -1127,6 +1217,18 @@ abstract class BaseUser extends BaseObject implements Persistent
                 }
             }
 
+            foreach ($this->getEventComments() as $relObj) {
+                if ($relObj !== $this) {  // ensure that we don't try to copy a reference to ourselves
+                    $copyObj->addEventComment($relObj->copy($deepCopy));
+                }
+            }
+
+            foreach ($this->getEventBillingPositions() as $relObj) {
+                if ($relObj !== $this) {  // ensure that we don't try to copy a reference to ourselves
+                    $copyObj->addEventBillingPosition($relObj->copy($deepCopy));
+                }
+            }
+
             //unflag object copy
             $this->startCopy = false;
         } // if ($deepCopy)
@@ -1196,6 +1298,12 @@ abstract class BaseUser extends BaseObject implements Persistent
         }
         if ('EventPosition' == $relationName) {
             $this->initEventPositions();
+        }
+        if ('EventComment' == $relationName) {
+            $this->initEventComments();
+        }
+        if ('EventBillingPosition' == $relationName) {
+            $this->initEventBillingPositions();
         }
     }
 
@@ -1871,6 +1979,470 @@ abstract class BaseUser extends BaseObject implements Persistent
     }
 
     /**
+     * Clears out the collEventComments collection
+     *
+     * This does not modify the database; however, it will remove any associated objects, causing
+     * them to be refetched by subsequent calls to accessor method.
+     *
+     * @return void
+     * @see        addEventComments()
+     */
+    public function clearEventComments()
+    {
+        $this->collEventComments = null; // important to set this to null since that means it is uninitialized
+        $this->collEventCommentsPartial = null;
+    }
+
+    /**
+     * reset is the collEventComments collection loaded partially
+     *
+     * @return void
+     */
+    public function resetPartialEventComments($v = true)
+    {
+        $this->collEventCommentsPartial = $v;
+    }
+
+    /**
+     * Initializes the collEventComments collection.
+     *
+     * By default this just sets the collEventComments collection to an empty array (like clearcollEventComments());
+     * however, you may wish to override this method in your stub class to provide setting appropriate
+     * to your application -- for example, setting the initial array to the values stored in database.
+     *
+     * @param boolean $overrideExisting If set to true, the method call initializes
+     *                                        the collection even if it is not empty
+     *
+     * @return void
+     */
+    public function initEventComments($overrideExisting = true)
+    {
+        if (null !== $this->collEventComments && !$overrideExisting) {
+            return;
+        }
+        $this->collEventComments = new PropelObjectCollection();
+        $this->collEventComments->setModel('EventComment');
+    }
+
+    /**
+     * Gets an array of EventComment objects which contain a foreign key that references this object.
+     *
+     * If the $criteria is not null, it is used to always fetch the results from the database.
+     * Otherwise the results are fetched from the database the first time, then cached.
+     * Next time the same method is called without $criteria, the cached collection is returned.
+     * If this User is new, it will return
+     * an empty collection or the current collection; the criteria is ignored on a new object.
+     *
+     * @param Criteria $criteria optional Criteria object to narrow the query
+     * @param PropelPDO $con optional connection object
+     * @return PropelObjectCollection|EventComment[] List of EventComment objects
+     * @throws PropelException
+     */
+    public function getEventComments($criteria = null, PropelPDO $con = null)
+    {
+        $partial = $this->collEventCommentsPartial && !$this->isNew();
+        if (null === $this->collEventComments || null !== $criteria  || $partial) {
+            if ($this->isNew() && null === $this->collEventComments) {
+                // return empty collection
+                $this->initEventComments();
+            } else {
+                $collEventComments = EventCommentQuery::create(null, $criteria)
+                    ->filterByUser($this)
+                    ->find($con);
+                if (null !== $criteria) {
+                    if (false !== $this->collEventCommentsPartial && count($collEventComments)) {
+                      $this->initEventComments(false);
+
+                      foreach($collEventComments as $obj) {
+                        if (false == $this->collEventComments->contains($obj)) {
+                          $this->collEventComments->append($obj);
+                        }
+                      }
+
+                      $this->collEventCommentsPartial = true;
+                    }
+
+                    return $collEventComments;
+                }
+
+                if($partial && $this->collEventComments) {
+                    foreach($this->collEventComments as $obj) {
+                        if($obj->isNew()) {
+                            $collEventComments[] = $obj;
+                        }
+                    }
+                }
+
+                $this->collEventComments = $collEventComments;
+                $this->collEventCommentsPartial = false;
+            }
+        }
+
+        return $this->collEventComments;
+    }
+
+    /**
+     * Sets a collection of EventComment objects related by a one-to-many relationship
+     * to the current object.
+     * It will also schedule objects for deletion based on a diff between old objects (aka persisted)
+     * and new objects from the given Propel collection.
+     *
+     * @param PropelCollection $eventComments A Propel collection.
+     * @param PropelPDO $con Optional connection object
+     */
+    public function setEventComments(PropelCollection $eventComments, PropelPDO $con = null)
+    {
+        $this->eventCommentsScheduledForDeletion = $this->getEventComments(new Criteria(), $con)->diff($eventComments);
+
+        foreach ($this->eventCommentsScheduledForDeletion as $eventCommentRemoved) {
+            $eventCommentRemoved->setUser(null);
+        }
+
+        $this->collEventComments = null;
+        foreach ($eventComments as $eventComment) {
+            $this->addEventComment($eventComment);
+        }
+
+        $this->collEventComments = $eventComments;
+        $this->collEventCommentsPartial = false;
+    }
+
+    /**
+     * Returns the number of related EventComment objects.
+     *
+     * @param Criteria $criteria
+     * @param boolean $distinct
+     * @param PropelPDO $con
+     * @return int             Count of related EventComment objects.
+     * @throws PropelException
+     */
+    public function countEventComments(Criteria $criteria = null, $distinct = false, PropelPDO $con = null)
+    {
+        $partial = $this->collEventCommentsPartial && !$this->isNew();
+        if (null === $this->collEventComments || null !== $criteria || $partial) {
+            if ($this->isNew() && null === $this->collEventComments) {
+                return 0;
+            } else {
+                if($partial && !$criteria) {
+                    return count($this->getEventComments());
+                }
+                $query = EventCommentQuery::create(null, $criteria);
+                if ($distinct) {
+                    $query->distinct();
+                }
+
+                return $query
+                    ->filterByUser($this)
+                    ->count($con);
+            }
+        } else {
+            return count($this->collEventComments);
+        }
+    }
+
+    /**
+     * Method called to associate a EventComment object to this object
+     * through the EventComment foreign key attribute.
+     *
+     * @param    EventComment $l EventComment
+     * @return User The current object (for fluent API support)
+     */
+    public function addEventComment(EventComment $l)
+    {
+        if ($this->collEventComments === null) {
+            $this->initEventComments();
+            $this->collEventCommentsPartial = true;
+        }
+        if (!$this->collEventComments->contains($l)) { // only add it if the **same** object is not already associated
+            $this->doAddEventComment($l);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param	EventComment $eventComment The eventComment object to add.
+     */
+    protected function doAddEventComment($eventComment)
+    {
+        $this->collEventComments[]= $eventComment;
+        $eventComment->setUser($this);
+    }
+
+    /**
+     * @param	EventComment $eventComment The eventComment object to remove.
+     */
+    public function removeEventComment($eventComment)
+    {
+        if ($this->getEventComments()->contains($eventComment)) {
+            $this->collEventComments->remove($this->collEventComments->search($eventComment));
+            if (null === $this->eventCommentsScheduledForDeletion) {
+                $this->eventCommentsScheduledForDeletion = clone $this->collEventComments;
+                $this->eventCommentsScheduledForDeletion->clear();
+            }
+            $this->eventCommentsScheduledForDeletion[]= $eventComment;
+            $eventComment->setUser(null);
+        }
+    }
+
+
+    /**
+     * If this collection has already been initialized with
+     * an identical criteria, it returns the collection.
+     * Otherwise if this User is new, it will return
+     * an empty collection; or if this User has previously
+     * been saved, it will retrieve related EventComments from storage.
+     *
+     * This method is protected by default in order to keep the public
+     * api reasonable.  You can provide public methods for those you
+     * actually need in User.
+     *
+     * @param Criteria $criteria optional Criteria object to narrow the query
+     * @param PropelPDO $con optional connection object
+     * @param string $join_behavior optional join type to use (defaults to Criteria::LEFT_JOIN)
+     * @return PropelObjectCollection|EventComment[] List of EventComment objects
+     */
+    public function getEventCommentsJoinEvent($criteria = null, $con = null, $join_behavior = Criteria::LEFT_JOIN)
+    {
+        $query = EventCommentQuery::create(null, $criteria);
+        $query->joinWith('Event', $join_behavior);
+
+        return $this->getEventComments($query, $con);
+    }
+
+    /**
+     * Clears out the collEventBillingPositions collection
+     *
+     * This does not modify the database; however, it will remove any associated objects, causing
+     * them to be refetched by subsequent calls to accessor method.
+     *
+     * @return void
+     * @see        addEventBillingPositions()
+     */
+    public function clearEventBillingPositions()
+    {
+        $this->collEventBillingPositions = null; // important to set this to null since that means it is uninitialized
+        $this->collEventBillingPositionsPartial = null;
+    }
+
+    /**
+     * reset is the collEventBillingPositions collection loaded partially
+     *
+     * @return void
+     */
+    public function resetPartialEventBillingPositions($v = true)
+    {
+        $this->collEventBillingPositionsPartial = $v;
+    }
+
+    /**
+     * Initializes the collEventBillingPositions collection.
+     *
+     * By default this just sets the collEventBillingPositions collection to an empty array (like clearcollEventBillingPositions());
+     * however, you may wish to override this method in your stub class to provide setting appropriate
+     * to your application -- for example, setting the initial array to the values stored in database.
+     *
+     * @param boolean $overrideExisting If set to true, the method call initializes
+     *                                        the collection even if it is not empty
+     *
+     * @return void
+     */
+    public function initEventBillingPositions($overrideExisting = true)
+    {
+        if (null !== $this->collEventBillingPositions && !$overrideExisting) {
+            return;
+        }
+        $this->collEventBillingPositions = new PropelObjectCollection();
+        $this->collEventBillingPositions->setModel('EventBillingPosition');
+    }
+
+    /**
+     * Gets an array of EventBillingPosition objects which contain a foreign key that references this object.
+     *
+     * If the $criteria is not null, it is used to always fetch the results from the database.
+     * Otherwise the results are fetched from the database the first time, then cached.
+     * Next time the same method is called without $criteria, the cached collection is returned.
+     * If this User is new, it will return
+     * an empty collection or the current collection; the criteria is ignored on a new object.
+     *
+     * @param Criteria $criteria optional Criteria object to narrow the query
+     * @param PropelPDO $con optional connection object
+     * @return PropelObjectCollection|EventBillingPosition[] List of EventBillingPosition objects
+     * @throws PropelException
+     */
+    public function getEventBillingPositions($criteria = null, PropelPDO $con = null)
+    {
+        $partial = $this->collEventBillingPositionsPartial && !$this->isNew();
+        if (null === $this->collEventBillingPositions || null !== $criteria  || $partial) {
+            if ($this->isNew() && null === $this->collEventBillingPositions) {
+                // return empty collection
+                $this->initEventBillingPositions();
+            } else {
+                $collEventBillingPositions = EventBillingPositionQuery::create(null, $criteria)
+                    ->filterByUser($this)
+                    ->find($con);
+                if (null !== $criteria) {
+                    if (false !== $this->collEventBillingPositionsPartial && count($collEventBillingPositions)) {
+                      $this->initEventBillingPositions(false);
+
+                      foreach($collEventBillingPositions as $obj) {
+                        if (false == $this->collEventBillingPositions->contains($obj)) {
+                          $this->collEventBillingPositions->append($obj);
+                        }
+                      }
+
+                      $this->collEventBillingPositionsPartial = true;
+                    }
+
+                    return $collEventBillingPositions;
+                }
+
+                if($partial && $this->collEventBillingPositions) {
+                    foreach($this->collEventBillingPositions as $obj) {
+                        if($obj->isNew()) {
+                            $collEventBillingPositions[] = $obj;
+                        }
+                    }
+                }
+
+                $this->collEventBillingPositions = $collEventBillingPositions;
+                $this->collEventBillingPositionsPartial = false;
+            }
+        }
+
+        return $this->collEventBillingPositions;
+    }
+
+    /**
+     * Sets a collection of EventBillingPosition objects related by a one-to-many relationship
+     * to the current object.
+     * It will also schedule objects for deletion based on a diff between old objects (aka persisted)
+     * and new objects from the given Propel collection.
+     *
+     * @param PropelCollection $eventBillingPositions A Propel collection.
+     * @param PropelPDO $con Optional connection object
+     */
+    public function setEventBillingPositions(PropelCollection $eventBillingPositions, PropelPDO $con = null)
+    {
+        $this->eventBillingPositionsScheduledForDeletion = $this->getEventBillingPositions(new Criteria(), $con)->diff($eventBillingPositions);
+
+        foreach ($this->eventBillingPositionsScheduledForDeletion as $eventBillingPositionRemoved) {
+            $eventBillingPositionRemoved->setUser(null);
+        }
+
+        $this->collEventBillingPositions = null;
+        foreach ($eventBillingPositions as $eventBillingPosition) {
+            $this->addEventBillingPosition($eventBillingPosition);
+        }
+
+        $this->collEventBillingPositions = $eventBillingPositions;
+        $this->collEventBillingPositionsPartial = false;
+    }
+
+    /**
+     * Returns the number of related EventBillingPosition objects.
+     *
+     * @param Criteria $criteria
+     * @param boolean $distinct
+     * @param PropelPDO $con
+     * @return int             Count of related EventBillingPosition objects.
+     * @throws PropelException
+     */
+    public function countEventBillingPositions(Criteria $criteria = null, $distinct = false, PropelPDO $con = null)
+    {
+        $partial = $this->collEventBillingPositionsPartial && !$this->isNew();
+        if (null === $this->collEventBillingPositions || null !== $criteria || $partial) {
+            if ($this->isNew() && null === $this->collEventBillingPositions) {
+                return 0;
+            } else {
+                if($partial && !$criteria) {
+                    return count($this->getEventBillingPositions());
+                }
+                $query = EventBillingPositionQuery::create(null, $criteria);
+                if ($distinct) {
+                    $query->distinct();
+                }
+
+                return $query
+                    ->filterByUser($this)
+                    ->count($con);
+            }
+        } else {
+            return count($this->collEventBillingPositions);
+        }
+    }
+
+    /**
+     * Method called to associate a EventBillingPosition object to this object
+     * through the EventBillingPosition foreign key attribute.
+     *
+     * @param    EventBillingPosition $l EventBillingPosition
+     * @return User The current object (for fluent API support)
+     */
+    public function addEventBillingPosition(EventBillingPosition $l)
+    {
+        if ($this->collEventBillingPositions === null) {
+            $this->initEventBillingPositions();
+            $this->collEventBillingPositionsPartial = true;
+        }
+        if (!$this->collEventBillingPositions->contains($l)) { // only add it if the **same** object is not already associated
+            $this->doAddEventBillingPosition($l);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param	EventBillingPosition $eventBillingPosition The eventBillingPosition object to add.
+     */
+    protected function doAddEventBillingPosition($eventBillingPosition)
+    {
+        $this->collEventBillingPositions[]= $eventBillingPosition;
+        $eventBillingPosition->setUser($this);
+    }
+
+    /**
+     * @param	EventBillingPosition $eventBillingPosition The eventBillingPosition object to remove.
+     */
+    public function removeEventBillingPosition($eventBillingPosition)
+    {
+        if ($this->getEventBillingPositions()->contains($eventBillingPosition)) {
+            $this->collEventBillingPositions->remove($this->collEventBillingPositions->search($eventBillingPosition));
+            if (null === $this->eventBillingPositionsScheduledForDeletion) {
+                $this->eventBillingPositionsScheduledForDeletion = clone $this->collEventBillingPositions;
+                $this->eventBillingPositionsScheduledForDeletion->clear();
+            }
+            $this->eventBillingPositionsScheduledForDeletion[]= $eventBillingPosition;
+            $eventBillingPosition->setUser(null);
+        }
+    }
+
+
+    /**
+     * If this collection has already been initialized with
+     * an identical criteria, it returns the collection.
+     * Otherwise if this User is new, it will return
+     * an empty collection; or if this User has previously
+     * been saved, it will retrieve related EventBillingPositions from storage.
+     *
+     * This method is protected by default in order to keep the public
+     * api reasonable.  You can provide public methods for those you
+     * actually need in User.
+     *
+     * @param Criteria $criteria optional Criteria object to narrow the query
+     * @param PropelPDO $con optional connection object
+     * @param string $join_behavior optional join type to use (defaults to Criteria::LEFT_JOIN)
+     * @return PropelObjectCollection|EventBillingPosition[] List of EventBillingPosition objects
+     */
+    public function getEventBillingPositionsJoinEvent($criteria = null, $con = null, $join_behavior = Criteria::LEFT_JOIN)
+    {
+        $query = EventBillingPositionQuery::create(null, $criteria);
+        $query->joinWith('Event', $join_behavior);
+
+        return $this->getEventBillingPositions($query, $con);
+    }
+
+    /**
      * Clears out the collEvents collection
      *
      * This does not modify the database; however, it will remove any associated objects, causing
@@ -2084,6 +2656,16 @@ abstract class BaseUser extends BaseObject implements Persistent
                     $o->clearAllReferences($deep);
                 }
             }
+            if ($this->collEventComments) {
+                foreach ($this->collEventComments as $o) {
+                    $o->clearAllReferences($deep);
+                }
+            }
+            if ($this->collEventBillingPositions) {
+                foreach ($this->collEventBillingPositions as $o) {
+                    $o->clearAllReferences($deep);
+                }
+            }
             if ($this->collEvents) {
                 foreach ($this->collEvents as $o) {
                     $o->clearAllReferences($deep);
@@ -2103,6 +2685,14 @@ abstract class BaseUser extends BaseObject implements Persistent
             $this->collEventPositions->clearIterator();
         }
         $this->collEventPositions = null;
+        if ($this->collEventComments instanceof PropelCollection) {
+            $this->collEventComments->clearIterator();
+        }
+        $this->collEventComments = null;
+        if ($this->collEventBillingPositions instanceof PropelCollection) {
+            $this->collEventBillingPositions->clearIterator();
+        }
+        $this->collEventBillingPositions = null;
         if ($this->collEvents instanceof PropelCollection) {
             $this->collEvents->clearIterator();
         }

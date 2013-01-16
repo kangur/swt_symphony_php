@@ -7,7 +7,7 @@ use \TableMap;
 
 
 /**
- * This class defines the structure of the 'event_position' table.
+ * This class defines the structure of the 'event_billing_position' table.
  *
  *
  *
@@ -18,13 +18,13 @@ use \TableMap;
  *
  * @package    propel.generator.src.FUBerlin.ProjectBundle.Model.map
  */
-class EventPositionTableMap extends TableMap
+class EventBillingPositionTableMap extends TableMap
 {
 
     /**
      * The (dot-path) name of this class
      */
-    const CLASS_NAME = 'src.FUBerlin.ProjectBundle.Model.map.EventPositionTableMap';
+    const CLASS_NAME = 'src.FUBerlin.ProjectBundle.Model.map.EventBillingPositionTableMap';
 
     /**
      * Initialize the table attributes, columns and validators
@@ -36,18 +36,17 @@ class EventPositionTableMap extends TableMap
     public function initialize()
     {
         // attributes
-        $this->setName('event_position');
-        $this->setPhpName('EventPosition');
-        $this->setClassname('FUBerlin\\ProjectBundle\\Model\\EventPosition');
+        $this->setName('event_billing_position');
+        $this->setPhpName('EventBillingPosition');
+        $this->setClassname('FUBerlin\\ProjectBundle\\Model\\EventBillingPosition');
         $this->setPackage('src.FUBerlin.ProjectBundle.Model');
         $this->setUseIdGenerator(true);
         // columns
         $this->addPrimaryKey('ID', 'Id', 'INTEGER', true, null, null);
         $this->addForeignKey('USER_ID', 'UserId', 'INTEGER', 'user', 'ID', false, null, null);
         $this->addForeignKey('EVENT_ID', 'EventId', 'INTEGER', 'event', 'ID', false, null, null);
-        $this->addColumn('TITLE', 'Title', 'VARCHAR', false, 100, null);
         $this->addColumn('AMOUNT', 'Amount', 'DECIMAL', false, 10, null);
-        $this->addColumn('RECEIPT_PATH', 'ReceiptPath', 'VARCHAR', false, 255, null);
+        $this->addColumn('PAID', 'Paid', 'BOOLEAN', false, 1, null);
         // validators
     } // initialize()
 
@@ -60,4 +59,4 @@ class EventPositionTableMap extends TableMap
         $this->addRelation('Event', 'FUBerlin\\ProjectBundle\\Model\\Event', RelationMap::MANY_TO_ONE, array('event_id' => 'id', ), 'CASCADE', 'CASCADE');
     } // buildRelations()
 
-} // EventPositionTableMap
+} // EventBillingPositionTableMap
