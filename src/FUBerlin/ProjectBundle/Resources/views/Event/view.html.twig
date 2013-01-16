@@ -1,81 +1,150 @@
 {% extends 'FUBerlinProjectBundle::base.html.twig' %}
 
 {% block content %}
-<h2>Event: {{ event.title }}</h2>
-<h3>Place: {{ event.place }}</h3>
+<div class="row">
+    <div class="span12">
+        <div class="page-header">
+            <h1>
+                {{ event.title }} <small>{{ event.place }}</small>
+                
+                {% if event.billed %}
+                <a href="javascript:void(0);" class="btn btn-success pull-right disabled" style="margin-top: 5px;"><i class="icon-ok icon-white"></i> Event is billed</a>
+                {% elseif event.ownerUser == app.user %}
+                <a href="{{ path('event_bill', {'id' :event.id}) }}" class="btn btn-success pull-right" style="margin-top: 5px;"><i class="icon-ok icon-white"></i> Bill event</a>
+                {% elseif not is_member %}
+                <a href="{{path('event_join', {'id' :event.id})}}" class="btn btn-primary pull-right" style="margin-top: 5px;"><i class="icon-plus icon-white"></i> Join event</a>
+                {% endif %}
+            </h1>
+        </div>
+        
+    </div>
+</div>
 
-{% if event.billed %}
-Event has already been billed
-{% elseif event.ownerUser == app.user %}
-<a href="{{ path('event_bill', {'id' :event.id}) }}">Click here to bill this event</a>
-{% endif %}
+<div class="row">
+    <div class="span7">
+        
+        {% if positions %}
 
-<br><br> 
+        <div class="">
+            <legend>Positions <small>(total: {{event.eventPositionsTotal}} {% if is_member %}my: {{event.eventPositionsTotalForUser(app.user)}} {% endif %})</small></legend>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Position</th>
+                        <th>Amount</th>
+                        <th>User</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for position in positions %}
+                        {% if position.user.username == app.user.username%}
+                            <tr class="success">
+                        {% else %}
+                            <tr>
+                        {% endif %}
+                                <td>{{position.title}} </td>
+                                <td>{{position.amount}}</td>
+                                <td>{{position.user.username}}</td>
+                                <td>
+                                    {% if position.canBeDeletedByUser(app.user) %}
+                                    <a class="close" href="{{path('position_delete', {'id' :position.id})}}">&times;</a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        {% endif %}
+        
+        {% if not event.billed %}
+            
+            <form action="{{ path('position_add', {'id' :event.id}) }}" method="post" {{ form_enctype(position_form) }}>
+                <fieldset>
+                    <legend>Add new position</legend>
+                    {{ form_widget(position_form) }}
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Add</button>
+                        <button type="reset" class="btn">Clear</button>
+                    </div>
+                </fieldset>
+            </form>
 
+        {% endif %}
+        
+    </div>
+    
+    <div class="span5">
 
-{% if not is_member %}
-<a href="{{path('event_join', {'id' :event.id})}}">Join this event</a>
-{% else %}
-Your balance for this event: {{ user_balance }}<br>
-{% if not event.billed %}
-<h3>Add new position </h3>
-<form action="{{ path('position_add', {'id' :event.id}) }}" method="post" {{ form_enctype(position_form) }}>
-    {{ form_widget(position_form) }}
-        <button type="submit" class="btn btn-large btn-primary">
-            Send
-        </button>
-    </form>
-{% endif %}
-{% endif %}
+        {% if members %}
+        <div class="well">
+            <legend>Members</legend>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>First Name</th>
+                        <th>Last Name</th>
+                        <th>Balance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for member in members %}
+                        {% if member.username == app.user.username%}
+                            <tr class="success">
+                        {% else %}
+                            <tr>
+                        {% endif %}
+                                <td>{{member.username}}</td>
+                                <td>{{member.firstName}}</td>
+                                <td>{{member.lastName}}</td>
+                                <td>{{event.amountForUser(member)}}</td>
+                            </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
 
-
-{% if positions %}
-    <h3>Positions: (total: {{event.eventPositionsTotal}} {% if is_member %}my: {{event.eventPositionsTotalForUser(app.user)}} {% endif %})</h3>
-    <ul>
-{% for position in positions %}
-            <li>{{position.title}} ({{position.amount}}) by {{position.user.username}}
-            {% if position.canBeDeletedByUser(app.user) %}
-                    <a href="{{path('position_delete', {'id' :position.id})}}">X</a>
-            {% endif %}
-                </li>
-{% endfor %}
-            </ul>
-{% endif %}
-
-{% if members %}
-            <h3>Members:</h3>
-            <ul>
-{% for member in members %}
-                    <li>{{member.username}} ({{member.firstName}} {{member.lastName}}) Balance: {{event.amountForUser(member)}}</li>
-{% endfor %}
-                </ul>
-{% endif %}
-
-{% if comments %}
-                <h3>Comments:</h3>
-                <ul>
-{% for comment in comments %}
-                        <li>{{comment.user.username}} wrote on {{comment.timestamp|date("d.m.Y H:m:s")}}:
-                        <p>{{comment.comment}}</p>
+        {% if comments %}
+            <legend>Comments</legend>
+        
+            {% for comment in comments %}
+            
+                <blockquote>
+                    <p>{{comment.comment}}</p>
+                    <small>
+                        {{comment.user.username}} wrote on {{comment.timestamp|date("d.m.Y H:m:s")}}
+                        
                         {% if comment.canBeDeletedByUser(app.user) %}
-                             <a href="{{path('comment_delete', {'id' :comment.id})}}">Delete comment</a>
+                            <a class="close" href="{{path('comment_delete', {'id' :comment.id})}}">&times;</a>
                         {% endif %}
                         
-                        </li>
-{% endfor %}
-                    </ul>
-{% endif %}
+                    </small>
+                </blockquote>
+            
+            {% endfor %}
+            
+        {% endif %}
 
-
-
-            {% if is_member %}
-
-                    <form action="{{ path('comment_add', {'id' :event.id}) }}" method="post" {{ form_enctype(comment_form) }}>
-    {{ form_widget(comment_form) }}
-                            <button type="submit" class="btn btn-large btn-primary">
-                                Send
-                            </button>
-                        </form>
-
-            {% endif %}
+        {% if is_member %}
+            <form class="" action="{{ path('comment_add', {'id' :event.id}) }}" method="post" {{ form_enctype(comment_form) }}>
+                <div class="form-actions">
+                    {{ form_widget(comment_form) }}
+                    <div class="form-actions">
+                        <button class="btn btn-primary" type="submit">Add</button>
+                        <button class="btn" type="reset">Clear</button>
+                    </div>
+                </div>
+            </form>
+        {% endif %}
+          
+                    
+            
+    </div>
+</div>
+            
 {% endblock %}
+
