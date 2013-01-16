@@ -41,9 +41,14 @@ class EventController extends Controller {
      */
     public function viewBilledPositionsAction() {
         $user = $this->get('security.context')->getToken()->getUser();
-        $positions = \FUBerlin\ProjectBundle\Model\EventBillingPositionQuery::create()->filterByUser($user)->find();
-        return $this->render(
-                        'FUBerlinProjectBundle:Event:billedpositions.html.twig', array('positions' => $positions));
+        $securityContext = $this->container->get('security.context');
+        if ($securityContext->isGranted('ROLE_USER')) {
+            $positions = \FUBerlin\ProjectBundle\Model\EventBillingPositionQuery::create()->filterByUser($user)->find();
+            return $this->render(
+                            'FUBerlinProjectBundle:Event:billedpositions.html.twig', array('positions' => $positions));
+        } else {
+            return $this->showError('You must log in to see your billed events');
+        }
     }
 
     /**
