@@ -4,23 +4,28 @@
 <h2>Event: {{ event.title }}</h2>
 <h3>Place: {{ event.place }}</h3>
 
+{% if event.billed %}
+Event has already been billed
+{% elseif event.ownerUser == app.user %}
+<a href="{{ path('event_bill', {'id' :event.id}) }}">Click here to bill this event</a>
+{% endif %}
+
+<br><br> 
+
+
 {% if not is_member %}
 <a href="{{path('event_join', {'id' :event.id})}}">Join this event</a>
 {% else %}
 Your balance for this event: {{ user_balance }}<br>
+{% if not event.billed %}
 <h3>Add new position </h3>
 <form action="{{ path('position_add', {'id' :event.id}) }}" method="post" {{ form_enctype(position_form) }}>
     {{ form_widget(position_form) }}
         <input type="submit" />
     </form>
 {% endif %}
-
-
-{% if event.billed %}
-Event has already been billed
-{% else %}
-Click here to bill this item
 {% endif %}
+
 
 {% if positions %}
     <h3>Positions: (total: {{event.eventPositionsTotal}} my: {{event.eventPositionsTotalForUser(app.user)}})</h3>

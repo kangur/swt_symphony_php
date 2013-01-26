@@ -12,5 +12,5 @@ class EventPosition extends BaseEventPosition
         } else {
             return ($this->getEvent()->getOwnerUser() == $user) || ($this->getUser() == $user);
         }
-    }
+    }    
 }
