@@ -5,10 +5,118 @@
         <title>{% block title %}Abrechner3000{% endblock %}</title>
         {% block stylesheets %}
             <link href="{{ asset('bundles/fuberlinproject/css/bootstrap.css') }}" type="text/css" rel="stylesheet" />
+            <link href="{{ asset('bundles/fuberlinproject/css/datepicker.css') }}" type="text/css" rel="stylesheet" />
+            <link href="{{ asset('bundles/fuberlinproject/css/bootstrap-lightbox.css') }}" type="text/css" rel="stylesheet" />
+            <style type="text/css">
+                #imageUpload {
+                    border: 1px dashed #CCCCCC;
+                    border-radius: 4px;
+                    height: 21px;
+                    margin-top: 30px;
+                    padding: 20px;
+                    text-align: center;
+                    width: 178px;
+                    font-weight: bold;
+                }
+                
+                #imageUpload.over {
+                    border-color: #D44413;
+                    background: #f7dbd2;
+                }
+                
+                #imageUpload > span {
+                    text-shadow: 0 0 2px #fff;
+                }
+            </style>
         {% endblock %}
         {% block javascripts %}
             <script type="text/javascript" src="{{ asset('bundles/fuberlinproject/js/jquery-1.8.3.min.js') }}"></script>
             <script type="text/javascript" src="{{ asset('bundles/fuberlinproject/js/bootstrap.js') }}"></script>
+            <script type="text/javascript" src="{{ asset('bundles/fuberlinproject/js/bootstrap-datepicker.js') }}"></script>
+            <script type="text/javascript" src="{{ asset('bundles/fuberlinproject/js/bootstrap-lightbox.js') }}"></script>
+            <script type="text/javascript">
+                $(function() {
+                    
+                    // Date-Picker
+                    var $ed = $('#event_date');
+                    var $dp = $ed.datepicker({
+                        format : 'dd-mm-yyyy'
+                    })
+                    $dp.on('changeDate', function() {
+                        $dp.datepicker('hide');
+                    });
+                    $ed.click(function() {
+                        $dp.datepicker('show');
+                    });
+                    
+                    // Image Open
+                    var $oImg = $(".dOpenImg"); 
+                    $oImg.click(function() {
+                        var url = $(this).data("url");
+                        $lb = $("#lightbox");
+                        $lb.find("img").attr("src", url)
+                        $lb.lightbox({
+                            'resizeToFit' : true
+                        });
+                        return false;
+                    });
+                    
+                    // Image Drag
+                    var $drag = $("#imageUpload");
+                    var $hidden = $("#eventposition_receiptPath");
+                    var dra = $drag[0];
+                    
+                    dra.addEventListener('drop', handleDrop, false);
+                    dra.addEventListener('dragover', handleDragOver, false);
+                    dra.addEventListener('dragexit', handleDragOut, false);
+                    
+                    function handleDrop(event) {
+                        event.stopPropagation();
+                        event.preventDefault();
+                        $drag.removeClass("over");
+                        
+                        var files = event.dataTransfer.files;
+                        if(files.length > 0) {
+                            var file = files[0];
+                            if(!file.type.match('image.*')) {
+                                return false;
+                            }
+                            
+                            var reader = new FileReader();
+                            reader.onload = function (evt) {
+                                var img = evt.target.result;
+                                $.ajax({
+                                    type: "POST",
+                                    url: "http://192.168.2.102/project/web/upload.php",
+                                    data: { image: img },
+                                    success: function(data) {
+                                        if(data != "false") {
+                                            $drag.css("background-image", "url(" + data + ")");
+                                            $hidden.val(data);
+                                        }
+                                    }
+                                });
+                                
+                            };
+                            reader.readAsDataURL(file);
+                        }
+                    }
+                    
+                    function handleDragOver(event) {
+                        event.stopPropagation();
+                        event.preventDefault();
+                        $drag.addClass("over");
+                    };
+                    
+                    function handleDragOut(event) {
+                        event.stopPropagation();
+                        event.preventDefault();
+                        $drag.removeClass("over");
+                    };
+                   
+
+                });
+            </script>
         {% endblock %}
         <link rel="shortcut icon" href="{{ asset('favicon.ico') }}" />
     </head>
@@ -32,11 +140,6 @@
                 <div class="container">
                     <a class="brand" href="{{ asset('') }}">Abrechner3000</a>
                     <div class="nav-collapse collapse">
-                        <ul class="nav">
-                            <li>
-                                 <a href="{{ path('event_billed_positions_view') }}">{{'My billed positions'|trans}}</a>             
-                            </li>
-                        </ul>
                         <ul class="nav pull-right">
                             {% if app.user %}
                                 <li><a href="{{ path('logout') }}">{{'Logout'|trans}}</a></li>
@@ -71,6 +174,15 @@
         </div>
         
         
-
+            <div id="lightbox" class="lightbox hide fade" tabindex="-1" role="dialog" aria-hidden="true">
+                <div class='lightbox-header'>
+                    <button type="button" class="close" data-dismiss="lightbox" aria-hidden="true">&times;</button>
+                </div>
+                <div class='lightbox-content'>
+                    <img src="image.png">
+                    <div class="lightbox-caption"><p>Your caption here</p></div>
+                </div>
+            </div>
+        
     </body>
 </html>

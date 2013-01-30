@@ -15,7 +15,10 @@ class EventType extends AbstractType
     {        
         $builder->add('title');
         $builder->add('place');
-        $builder->add('date');
+        $builder->add('date', 'date', array(
+            'widget' => 'single_text',
+            'format' => 'dd-MM-yyyy',
+        ));
         $builder->add('requireReceipt','checkbox', array('required'=>false, 'label'=>'Receipt required?'));        
     }
 

@@ -46,7 +46,11 @@
                                 <td>{{position.title}} </td>
                                 <td>{{position.amount}}</td>
                                 <td>{{position.user.username}}</td>
-                                <td></td>
+                                <td>
+                                    {% if event.requireReceipt %}
+                                         <a href="#" class="dOpenImg" data-url="{{ position.receiptPath }}"><i class="icon-file"></i></a>
+                                    {% endif%}
+                                </td>
                                 <td>
                                     {% if position.canBeDeletedByUser(app.user) %}
                                       <div style="float: right;">
@@ -75,6 +79,15 @@
                 <fieldset>
                     <legend>{{'Add new position'|trans}}</legend>
                     {{ form_widget(position_form) }}
+                    <script type="text/javascript">
+                        var $ea = $("#eventposition_amount");
+                        $ea.parent().addClass("input-append");
+                        $ea.css("width", "179px");
+                        $ea.after("<span class='add-on'>€</span>");
+                    </script>
+                    {% if event.requireReceipt %}
+                        <div id="imageUpload"><span>Drag image here!</span></div>
+                    {% endif %}
                     <div class="form-actions">
                         <button type="submit" class="btn btn-primary">Add</button>
                         <button type="reset" class="btn">Clear</button>

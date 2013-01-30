@@ -15,7 +15,7 @@ class EventPositionType extends AbstractType
     {
         $builder->add('title');
         $builder->add('amount', 'number', array('precision' => 2));
-//        $builder->add('receiptPath');
+        $builder->add('receiptPath', 'hidden');
     }
 
     /**
