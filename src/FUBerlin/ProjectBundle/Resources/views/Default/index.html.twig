@@ -16,9 +16,12 @@
                 <li class="nav-header">My events</li>
                     {% if myEvents.count > 0 %}
                         {% for event in myEvents %}
-                            <li><a href="{{ path('event_view', {'id' :event.id}) }}"> {{event.title}}</a>
+                            <li style="padding: 3px 0;"><a style="display: inline" href="{{ path('event_view', {'id' :event.id}) }}"> {{event.title}}</a>
                            {% if event.canBeDeletedByUser(app.user) %}
-                               <a class="close" href="{{path('event_delete', {'id' :event.id})}}">&times;</a>
+                                <div style="float: right;">
+                                    <a href="#"><i class="icon-edit"></i></a>
+                                    <a href="{{path('event_delete', {'id' :event.id})}}"><i class="icon-trash"></i></a>
+                                </div>
                             {% endif %}
                             </li>
                         {% endfor %}
