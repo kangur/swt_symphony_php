@@ -1,6 +1,6 @@
 <?php
 
-namespace FUBerlin\ProjectBundle\Controller;
+namespace FUBerlin\ProjectBundle\Controller; 
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
@@ -17,8 +17,11 @@ class DefaultController extends Controller
         $user = $this->get('security.context')->getToken()->getUser();
         $securityContext = $this->container->get('security.context');
         if ($securityContext->isGranted('ROLE_USER')){
-            $events = \FUBerlin\ProjectBundle\Model\EventQuery::create()->distinct()->filterByMemberUser($user)->_or()->filterByOwnerUser($user)->limit(10)->find();
-            return array('events' => $events);
+            $events = \FUBerlin\ProjectBundle\Model\EventQuery::create()->distinct()->leftJoinEventMember()->filterByMemberUser($user)->find();
+            $myEvents = \FUBerlin\ProjectBundle\Model\EventQuery::create()->filterByOwnerUser($user)->find();
+            
+            return array('events' => $events,
+                'myEvents'=>$myEvents);
         }
         
         return array('name' => 'Ich bin es '.$name, );
