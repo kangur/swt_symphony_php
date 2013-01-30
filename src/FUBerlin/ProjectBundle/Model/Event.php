@@ -32,7 +32,7 @@ class Event extends BaseEvent {
             $memberUsers->prepend($this->getOwnerUser());
         }
         return $memberUsers;
-    }
+    } 
 
     public function getAmountForUser(\FUBerlin\ProjectBundle\Model\User $user) {
         $totalPerUser = $this->getEventPositionsTotal()/count($this->getMemberUsers());
@@ -40,8 +40,12 @@ class Event extends BaseEvent {
         return round($userTotal-$totalPerUser,2);
     }
 
-    public function isMember(\FUBerlin\ProjectBundle\Model\User $user) {
+    public function isMember(\FUBerlin\ProjectBundle\Model\User $user = null) {
         return ($this->getOwnerUser() == $user) || (EventMemberQuery::create()->filterByEvent($this)->filterByMemberUser($user)->count() > 0);
+    }
+    
+    public function  canBeDeletedByUser(\FUBerlin\ProjectBundle\Model\User $user) {
+        return !$this->getBilled() && ($this->getOwnerUser() == $user);
     }
 
 }

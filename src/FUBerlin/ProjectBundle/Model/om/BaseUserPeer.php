@@ -9,6 +9,8 @@ use \PDOStatement;
 use \Propel;
 use \PropelException;
 use \PropelPDO;
+use FUBerlin\ProjectBundle\Model\EventBillingPositionPeer;
+use FUBerlin\ProjectBundle\Model\EventCommentPeer;
 use FUBerlin\ProjectBundle\Model\EventMemberPeer;
 use FUBerlin\ProjectBundle\Model\EventPeer;
 use FUBerlin\ProjectBundle\Model\EventPositionPeer;
@@ -392,6 +394,12 @@ abstract class BaseUserPeer
         // Invalidate objects in EventPositionPeer instance pool,
         // since one or more of them may be deleted by ON DELETE CASCADE/SETNULL rule.
         EventPositionPeer::clearInstancePool();
+        // Invalidate objects in EventCommentPeer instance pool,
+        // since one or more of them may be deleted by ON DELETE CASCADE/SETNULL rule.
+        EventCommentPeer::clearInstancePool();
+        // Invalidate objects in EventBillingPositionPeer instance pool,
+        // since one or more of them may be deleted by ON DELETE CASCADE/SETNULL rule.
+        EventBillingPositionPeer::clearInstancePool();
     }
 
     /**
@@ -743,6 +751,18 @@ abstract class BaseUserPeer
 
             $criteria->add(EventPositionPeer::USER_ID, $obj->getId());
             $affectedRows += EventPositionPeer::doDelete($criteria, $con);
+
+            // delete related EventComment objects
+            $criteria = new Criteria(EventCommentPeer::DATABASE_NAME);
+
+            $criteria->add(EventCommentPeer::USER_ID, $obj->getId());
+            $affectedRows += EventCommentPeer::doDelete($criteria, $con);
+
+            // delete related EventBillingPosition objects
+            $criteria = new Criteria(EventBillingPositionPeer::DATABASE_NAME);
+
+            $criteria->add(EventBillingPositionPeer::USER_ID, $obj->getId());
+            $affectedRows += EventBillingPositionPeer::doDelete($criteria, $con);
         }
 
         return $affectedRows;

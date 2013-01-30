@@ -14,6 +14,13 @@ class DefaultController extends Controller
      */
     public function indexAction($name = null)
     {
-        return array('name' => $name);
+        $user = $this->get('security.context')->getToken()->getUser();
+        $securityContext = $this->container->get('security.context');
+        if ($securityContext->isGranted('ROLE_USER')){
+            $events = \FUBerlin\ProjectBundle\Model\EventQuery::create()->distinct()->filterByMemberUser($user)->_or()->filterByOwnerUser($user)->limit(10)->find();
+            return array('events' => $events);
+        }
+        
+        return array('name' => 'Ich bin es '.$name, );
     }
 }

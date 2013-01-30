@@ -13,7 +13,7 @@ class UserQuery extends BaseUserQuery implements \Symfony\Component\Security\Cor
             return $user; 
             
         } else {
-            throw new UsernameNotFoundException(sprintf('Unable to find user "%s".', $username), null, 0);
+            throw new UsernameNotFoundException(sprintf('Unable to find user "%s".', $username));
         }
         
         return $user;

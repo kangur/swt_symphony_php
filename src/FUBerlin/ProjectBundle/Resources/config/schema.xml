@@ -52,7 +52,7 @@
         <column name="user_id" type="integer"/>
         <column name="event_id" type="integer"/>
         <column name="title" type="varchar" size="100" />
-        <column name="amount" type="decimal" scale="2" />
+        <column name="amount" type="decimal" size="10" scale="2" />
         <column name="receipt_path" type="varchar" size="255" />
         <foreign-key foreignTable="user" onDelete="cascade" onUpdate="cascade">
             <reference local="user_id" foreign="id" />
@@ -67,6 +67,42 @@
     </table>
     
     
+    
+    <table name="event_comment">
+        <column name="id" type="integer" required="true" primaryKey="true" autoIncrement="true" />
+        <column name="user_id" type="integer"/>
+        <column name="event_id" type="integer"/>
+        <column name="comment" type="longvarchar" />
+        <column name="timestamp" type="timestamp"/>
+        <foreign-key foreignTable="user" onDelete="cascade" onUpdate="cascade">
+            <reference local="user_id" foreign="id" />
+        </foreign-key>
+        <foreign-key foreignTable="event" onDelete="cascade" onUpdate="cascade">
+            <reference local="event_id" foreign="id" />
+        </foreign-key>
+        <vendor type="mysql">
+            <parameter name="Engine" value="InnoDB"/>
+            <parameter name="Charset" value="utf8"/>
+        </vendor>
+    </table>
+    
+    <table name="event_billing_position">
+        <column name="id" type="integer" required="true" primaryKey="true" autoIncrement="true" />
+        <column name="user_id" type="integer"/>
+        <column name="event_id" type="integer"/>
+        <column name="amount" type="decimal" size="10" scale="2" />
+        <column name="paid" type="boolean"/>
+        <foreign-key foreignTable="user" onDelete="cascade" onUpdate="cascade">
+            <reference local="user_id" foreign="id" />
+        </foreign-key>
+        <foreign-key foreignTable="event" onDelete="cascade" onUpdate="cascade">
+            <reference local="event_id" foreign="id" />
+        </foreign-key>
+        <vendor type="mysql">
+            <parameter name="Engine" value="InnoDB"/>
+            <parameter name="Charset" value="utf8"/>
+        </vendor>
+    </table>
     
     <!--<table name=-->
     

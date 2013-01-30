@@ -1,0 +1,51 @@
+{% extends 'FUBerlinProjectBundle::base.html.twig' %}
+
+{% block content %}
+{% if positions.count > 0 %}
+
+
+<!--{# 
+<div class="row">
+    <div class="span12">
+        <legend>My billed positions</legend>
+        <div style="padding: 8px 0;" class="well">
+            <ul class="nav nav-list">
+                {% for position in positions %}
+                    <li><strong><a href="{{ path('event_view', {'id' :position.event.id}) }}">{{ position.event.title }}</a></strong> in {{ position.event.place }}
+                         <br> Amount: {{ position.amount }}
+                         {% if position.paid == true %}
+                            Position is marked as paid
+                            {% else %}
+                            Position is not payed yet. 
+                            <a href="{{ path('event_mark_position_as_paid', {'id' :position.id}) }}">Mark as paid</a>{% autoescape <button class="btn btn-mini" type="button">Mini button</button> %}
+                            {% endautoescape %}              
+                         {% endif %}
+                         <br> 
+                     </li>
+                 {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+#}-->
+
+<h2>My billed positions:</h2>
+    <ul>
+{% for position in positions %}
+             <li><strong><a href="{{ path('event_view', {'id' :position.event.id}) }}">{{ position.event.title }}</a></strong> in {{ position.event.place }}
+                 <br> Amount: {{ position.amount }}
+                 {% if position.paid == true %}
+                    Position is marked as paid
+                    {% else %}
+                    Position is not payed yet. 
+                    <a href="{{ path('event_mark_position_as_paid', {'id' :position.id}) }}">Mark as paid</a>                    
+                 {% endif %}
+                 <br> 
+             </li>
+{% endfor %}
+    </ul>
+{% else %}
+    <h2>You have no billed positions yet.</h2>
+    
+{% endif %}
+{% endblock %}

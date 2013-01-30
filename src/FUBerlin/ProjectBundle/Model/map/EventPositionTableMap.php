@@ -46,7 +46,7 @@ class EventPositionTableMap extends TableMap
         $this->addForeignKey('USER_ID', 'UserId', 'INTEGER', 'user', 'ID', false, null, null);
         $this->addForeignKey('EVENT_ID', 'EventId', 'INTEGER', 'event', 'ID', false, null, null);
         $this->addColumn('TITLE', 'Title', 'VARCHAR', false, 100, null);
-        $this->addColumn('AMOUNT', 'Amount', 'DECIMAL', false, null, null);
+        $this->addColumn('AMOUNT', 'Amount', 'DECIMAL', false, 10, null);
         $this->addColumn('RECEIPT_PATH', 'ReceiptPath', 'VARCHAR', false, 255, null);
         // validators
     } // initialize()
