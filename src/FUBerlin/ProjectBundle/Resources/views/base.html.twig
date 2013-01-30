@@ -87,7 +87,7 @@
                                 var img = evt.target.result;
                                 $.ajax({
                                     type: "POST",
-                                    url: "http://192.168.2.102/project/web/upload.php",
+                                    url: "/project/web/upload.php",
                                     data: { image: img },
                                     success: function(data) {
                                         if(data != "false") {
