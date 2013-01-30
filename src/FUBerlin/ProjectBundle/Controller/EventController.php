@@ -11,16 +11,22 @@ use \FUBerlin\ProjectBundle\Model\Event;
 
 class EventController extends Controller {
 
+    public function getRequest() {
+        $request = parent::getRequest();
+        $request->setLocale($this->get('session')->get('_locale'));
+        return $request;
+    }
+
     private function showError($errorMessage) {
         return $this->render(
                         'FUBerlinProjectBundle:Event:error.html.twig', array('errorMessage' => $errorMessage));
     }
 
-    
-     private function showSuccess($successMessage) {
+    private function showSuccess($successMessage) {
         return $this->render(
                         'FUBerlinProjectBundle:Event:success.html.twig', array('successMessage' => $successMessage));
     }
+
     /**
      * @Route("/event/add", name="event_add")
      */
@@ -131,7 +137,7 @@ class EventController extends Controller {
             $event->save();
             return $this->redirect($this->generateUrl('event_view', array('id' => $event->getId())));
         }
-    } 
+    }
 
     /**
      * @Route("/event/bill/{id}", name="event_bill")

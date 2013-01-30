@@ -10,12 +10,18 @@ use \FUBerlin\ProjectBundle\Model\User;
 
 class UserController extends Controller {
 
+    public function getRequest() {
+        $request = parent::getRequest();
+        $request->setLocale($this->get('session')->get('_locale'));
+        return $request;
+    }
+
     /**
      * @Route("/register", name="register")
      */
     public function registerAction(\Symfony\Component\HttpFoundation\Request $request) {
         $user = new User();
-        $form = $this->createForm(new \FUBerlin\ProjectBundle\Form\Type\UserType(), $user);        
+        $form = $this->createForm(new \FUBerlin\ProjectBundle\Form\Type\UserType(), $user);
         if ($request->isMethod('POST')) {
             $form->bind($request);
             if ($form->isValid()) {
