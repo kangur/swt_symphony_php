@@ -5,15 +5,15 @@
 {% if app.user %}
 
 <div class="page-header">
-    <h1>Hello, {{ app.user.username }}</h1>
+    <h1>{{'Hello'|trans}}, {{ app.user.username }}</h1>
 </div>
 
 <div class="row">
     <div class="span7">
-        <legend>My events</legend>
+        <legend>{{'My events'|trans}}</legend>
         <div style="padding: 8px 0;" class="well">
             <ul class="nav nav-list">
-                <li class="nav-header">My events</li>
+                <li class="nav-header">{{'My events'|trans}}</li>
                     {% if myEvents.count > 0 %}
                         {% for event in myEvents %}
                             <li style="padding: 3px 0;"><a style="display: inline" href="{{ path('event_view', {'id' :event.id}) }}"> {{event.title}}</a>
@@ -25,21 +25,21 @@
                             {% endif %}
                             </li>
                         {% endfor %}
-                    {% else %} 
-                        <li class="disabled">You don't have any events yet</li>
+                    {% else %}    
+                           <li class="disabled">{{'You dont have any events yet'|trans}}</li>
                     {% endif %}
-                <li class="nav-header">Joined events</li>
+                <li class="nav-header">{{'Joined events'|trans}}</li>
                     {% if events.count > 0 %}
                         {% for event in events %}
                             <li><a href="{{ path('event_view', {'id' :event.id}) }}"> {{event.title}}</a></li>
                            <!--{# {% if event.canBeDeleteByUser(app.user) %}
-                               <a class="close" href="{{path('event_delete', {'id' :event.id})}}">&times;</a>
-                            {% endif %}#}-->
+<a class="close" href="{{path('event_delete', {'id' :event.id})}}">&times;</a>
+{% endif %}#}-->
                         {% endfor %}
-                    {% else %}
-                        <li class="disabled">You don't have any events yet</li>
+                    {% else %}                     
+                        <li class="disabled">{{'You dont have any events yet'|trans}}</li>
                     {% endif %}
-                <li class="nav-header">Closed events</li>
+                <li class="nav-header">{{'Closed events'|trans}}</li>
                 <li>-</li>
                 <li class="divider"></li>
                 <li>-</li>
@@ -49,7 +49,7 @@
     <div class="span5">
         <legend>Tools</legend>
         <div style="max-width: 400px; margin: 0 auto 10px;" class="well">
-            <a href="{{ path('event_add') }}" class="btn btn-large btn-block btn-success"><i class="icon-glass icon-white"></i> Add an event</a>
+            <a href="{{ path('event_add') }}" class="btn btn-large btn-block btn-success"><i class="icon-glass icon-white"></i>{{'Add an event'|trans}}</a>
             <a href="" class="btn btn-large btn-block btn-warning"><i class="icon-search icon-white"></i> anything</a>
             <a href="" class="btn btn-large btn-block btn-danger"><i class="icon-trash icon-white"></i> else</a>
         </div>
@@ -61,23 +61,23 @@
 <div class="hero-unit">
     <h1>Abrechner3000!</h1>
     <p>
-        You have an event and many peoples with different expenses? So you definitively need Abrechner3000!!!
+        {{'You have an event and many peoples with different expenses? So you definitively need Abrechner3000'|trans}}!!!
     </p>
     <p>
-        <a href="{{ path('register') }}" class="btn btn-primary btn-large">Register</a>
+        <a href="{{ path('register') }}" class="btn btn-primary btn-large">{{'Register'|trans}}</a>
     </p>
 </div>
 <div class="row">
     <div class="span8">
-        <h2>Recent events:</h2>
+        <h2>{{'Recent events'|trans}}:</h2>
     </div>
     <div class="span4">
         <form action="{{ path('login_check') }}" class="form-signin" method="post">
-            <h2 class="form-signin-heading">Please sign in</h2>
-            <input type="text" placeholder="Username" name="_username" class="input-block-level">
-            <input type="password" placeholder="Password" name="_password" class="input-block-level">
+            <h2 class="form-signin-heading">{{'Please sign in'|trans}}</h2>
+            <input type="text" placeholder={{"Username"|trans}} name="_username" class="input-block-level">
+            <input type="password" placeholder={{"Password"|trans}} name="_password" class="input-block-level">
             <button type="submit" class="btn btn-large btn-primary">
-                login
+                {{'Login'|trans}}
             </button>
         </form>
     </div>

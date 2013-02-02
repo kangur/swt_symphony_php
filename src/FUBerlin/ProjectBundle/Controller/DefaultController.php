@@ -19,8 +19,7 @@ class DefaultController extends Controller {
      * @Template("FUBerlinProjectBundle:Default:index.html.twig")
      */
     public function indexAction($name = null) {
-        //echo $this->get('translator')->trans('login');
-        echo $this->getRequest()->getLocale();
+        $this->getRequest()->getLocale();
         $user = $this->get('security.context')->getToken()->getUser();
         $securityContext = $this->container->get('security.context');
         if ($securityContext->isGranted('ROLE_USER')) {

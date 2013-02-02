@@ -259,16 +259,14 @@ class EventController extends Controller {
     /**
      * @Route("/event/edit_position/{id}", name="position_edit")
      */
-    /*
-      public function editPositionAction($id) {
+      /*public function editPositionAction($id) {
       $position = \FUBerlin\ProjectBundle\Model\EventPositionQuery::create()->findOneById($id);
       $user = $this->get('security.context')->getToken()->getUser();
       if (!$position) {
       return $this->showError('Event not found!');
       } else {
       if ($position->canBeEditByUser($user)) {
-     * 
-     * 
+      
       $position->save();
       return $this->redirect($this->generateUrl('event_view', array('id' => $id)));
       }

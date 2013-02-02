@@ -1,5 +1,24 @@
-login: Anmelden
-Register: Registrierung
+# Login page
+Login: Anmelden
+Register: Registrieren
 My billed positions: Meine Posten
 Language: Sprache
 Logout: Abmelden
+Please sign in: Bitte melden Sie sich an
+Recent events: Aktuelle Ereignisse
+You have an event and many peoples with different expenses? So you definitively need Abrechner3000: Hast Du eine Veranstaltung und viele Freunde mit unterschiedlichen Kosten? Dann brauchst Du definitiv Abrechner3000
+
+# Registration
+Username: Benutzername
+Password: Passwort
+First name: Vorname
+Last name: Nachname
+Cancel: Abbrechen
+
+#index
+Hello: Hallo
+My events: Meine Ereignisse
+You dont have any events yet: Sie haben noch keine Ereignisse
+Closed events: Geschlossene Ereignisse
+Joined events: Verbindende  Ereignisse
+Add an event: Neues Ereignis hinzufügen
