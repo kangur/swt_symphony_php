@@ -19,10 +19,14 @@
                             <li style="padding: 3px 0;"><a style="display: inline" href="{{ path('event_view', {'id' :event.id}) }}"> {{event.title}}</a>
                            {% if event.canBeDeletedByUser(app.user) %}
                                 <div style="float: right;">
-                                    <a href="#"><i class="icon-edit"></i></a>
                                     <a href="{{path('event_delete', {'id' :event.id})}}"><i class="icon-trash"></i></a>
                                 </div>
                             {% endif %}
+                            {% if event.canBeEditByUser(app.user) %}
+                                <div style="float: right;">  
+                                    <a href="{{path('event_edit', {'id' :event.id})}}"><i class="icon-edit"></i></a>
+                                </div>
+                            {% endif %}     
                             </li>
                         {% endfor %}
                     {% else %}    
@@ -32,9 +36,6 @@
                     {% if events.count > 0 %}
                         {% for event in events %}
                             <li><a href="{{ path('event_view', {'id' :event.id}) }}"> {{event.title}}</a></li>
-                           <!--{# {% if event.canBeDeleteByUser(app.user) %}
-<a class="close" href="{{path('event_delete', {'id' :event.id})}}">&times;</a>
-{% endif %}#}-->
                         {% endfor %}
                     {% else %}                     
                         <li class="disabled">{{'You dont have any events yet'|trans}}</li>

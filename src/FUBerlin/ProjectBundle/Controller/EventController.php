@@ -46,6 +46,26 @@ class EventController extends Controller {
         return $this->render(
                         'FUBerlinProjectBundle:Event:add.html.twig', array('form' => $form->createView()));
     }
+    
+      /**
+     * @Route("/event/edit_event/{id}", name="event_edit")
+    */
+      public function editPositionAction($id) {
+        $event = \FUBerlin\ProjectBundle\Model\EventQuery::create()->findOneById($id);
+        $form = $this->createForm(new \FUBerlin\ProjectBundle\Form\Type\EventType(), $event);
+        if ($this->getRequest()->isMethod('POST')) {
+            $form->bind($this->getRequest());
+            if ($form->isValid()) {
+                /* @var $user \FUBerlin\ProjectBundle\Model\User */
+                $user = $this->get('security.context')->getToken()->getUser();
+                $event->setOwnerId($user->getId());
+                $event->save();
+                return $this->redirect($this->generateUrl('event_view', array('id' => $event->getId())));
+            }
+        }
+        return $this->render(
+              'FUBerlinProjectBundle:Event:edit.html.twig', array('form' => $form->createView(), 'event'=>$event));
+    }         
 
     /**
      * @Route("/my_billed_positions", name="event_billed_positions_view")
@@ -118,7 +138,7 @@ class EventController extends Controller {
                             'is_member' => false));
             }
         }
-    }
+    } 
 
     /**
      * @Route("/event/join/{id}", name="event_join")
@@ -258,8 +278,8 @@ class EventController extends Controller {
 
     /**
      * @Route("/event/edit_position/{id}", name="position_edit")
-     */
-      /*public function editPositionAction($id) {
+    
+      public function editPositionAction($id) {
       $position = \FUBerlin\ProjectBundle\Model\EventPositionQuery::create()->findOneById($id);
       $user = $this->get('security.context')->getToken()->getUser();
       if (!$position) {
@@ -271,7 +291,7 @@ class EventController extends Controller {
       return $this->redirect($this->generateUrl('event_view', array('id' => $id)));
       }
       }
-      } */
+      }  */
 
     /**
      * @Route("/event/add_position/{id}", name="position_add")

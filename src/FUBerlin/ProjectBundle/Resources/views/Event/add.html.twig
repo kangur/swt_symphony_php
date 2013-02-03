@@ -4,13 +4,13 @@
 
 <form class="form-horizontal well" action="{{ path('event_add') }}" method="post" {{ form_enctype(form) }}>
     <fieldset>
-        <legend>Add Event</legend>
+        <legend>{{'Add Event'|trans}}</legend>
     
         {{ form_widget(form) }}
 
         <div class="form-actions">
-            <button class="btn btn-primary" type="submit">Add</button>
-            <button class="btn" type="reset">Cancel</button>
+            <button class="btn btn-primary" type="submit">{{'Add'|trans}}</button>
+            <button class="btn" type="reset">{{'Cancel'|trans}}</button>
         </div>
         
     </fieldset>

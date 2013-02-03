@@ -1,4 +1,4 @@
-# Login page
+# Login page - base.html
 Login: Anmelden
 Register: Registrieren
 My billed positions: Meine Posten
@@ -14,11 +14,18 @@ Password: Passwort
 First name: Vorname
 Last name: Nachname
 Cancel: Abbrechen
+#Register: Registrieren
+User has been created successfully: Benutzer wurde erfolgreich angelegt
 
-#index
+#index.html
 Hello: Hallo
 My events: Meine Ereignisse
 You dont have any events yet: Sie haben noch keine Ereignisse
 Closed events: Geschlossene Ereignisse
 Joined events: Verbindende  Ereignisse
 Add an event: Neues Ereignis hinzufügen
+
+#addEvent
+Add Event: Neues Ereignis hinzufügen
+Add: Hinzufügen
+#Cancel: Abbrechen

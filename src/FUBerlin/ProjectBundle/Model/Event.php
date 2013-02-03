@@ -47,5 +47,9 @@ class Event extends BaseEvent {
     public function  canBeDeletedByUser(\FUBerlin\ProjectBundle\Model\User $user) {
         return !$this->getBilled() && ($this->getOwnerUser() == $user);
     }
+    
+    public function  canBeEditByUser(\FUBerlin\ProjectBundle\Model\User $user) {
+        return !$this->getBilled() && ($this->getOwnerUser() == $user);
+    }
 
 }
