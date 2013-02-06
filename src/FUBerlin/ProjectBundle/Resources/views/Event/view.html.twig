@@ -5,7 +5,7 @@
     <div class="span12">
         <div class="page-header">
             <h1>
-                {{ event.title }} <small>{{ event.place }}</small>
+                {{ event.title }} <small> in </small>{{ event.place }} <small> on </small> {{ event.date|date("d.m.Y")}}
                 
                 {% if event.billed %}
                 <a href="javascript:void(0);" class="btn btn-success pull-right disabled" style="margin-top: 5px;"><i class="icon-ok icon-white"></i> {{'Event is billed'|trans}}</a>
@@ -46,6 +46,7 @@
                                 <td>{{position.title}} </td>
                                 <td>{{position.amount}}</td>
                                 <td>{{position.user.username}}</td>
+                                <td></td>
                                 <td>
                                     {% if position.canBeDeletedByUser(app.user) %}
                                       <div style="float: right;">

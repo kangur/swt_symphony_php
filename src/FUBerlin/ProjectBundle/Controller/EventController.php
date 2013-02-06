@@ -341,7 +341,7 @@ class EventController extends Controller {
                 
                 $form->bind($this->getRequest());
                 $eventPosition->save();
-                return $this->redirect($this->generateUrl('event_view', array('id' => $id)));
+                return $this->redirect($this->generateUrl('position_edit', array('id' => $id)));
             }
         }   
       return $this->render(
