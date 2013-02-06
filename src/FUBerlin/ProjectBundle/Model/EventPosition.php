@@ -14,5 +14,12 @@ class EventPosition extends BaseEventPosition
         }
     }    
     
+    public function canBeEditedByUser(\FUBerlin\ProjectBundle\Model\User $user = null) {
+        if ($this->getEvent()->getBilled()){
+            return false;
+        } else {            
+            return ($this->getEvent()->getOwnerUser() == $user) || ($this->getUser() == $user);
+        }
+    }    
     
 }

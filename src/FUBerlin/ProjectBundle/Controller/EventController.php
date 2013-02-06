@@ -50,7 +50,7 @@ class EventController extends Controller {
       /**
      * @Route("/event/edit_event/{id}", name="event_edit")
     */
-      public function editPositionAction($id) {
+      public function editEventAction($id) {
         $event = \FUBerlin\ProjectBundle\Model\EventQuery::create()->findOneById($id);
         $form = $this->createForm(new \FUBerlin\ProjectBundle\Form\Type\EventType(), $event);
         if ($this->getRequest()->isMethod('POST')) {
@@ -217,9 +217,9 @@ class EventController extends Controller {
         $position = \FUBerlin\ProjectBundle\Model\EventPositionQuery::create()->findOneById($id);
         $user = $this->get('security.context')->getToken()->getUser();
         if (!$position) {
-            return $this->showError('Event not found!');
+            return $this->showError('Position not found!');
         } else {
-            if ($position->canBeDeletedByUser($user)) { //
+            if ($position->canBeDeletedByUser($user)) {
                 $position->delete();
                 return $this->redirect($this->generateUrl('event_view', array('id' => $position->getEvent()->getId())));
             } else {
@@ -277,23 +277,6 @@ class EventController extends Controller {
     }
 
     /**
-     * @Route("/event/edit_position/{id}", name="position_edit")
-    
-      public function editPositionAction($id) {
-      $position = \FUBerlin\ProjectBundle\Model\EventPositionQuery::create()->findOneById($id);
-      $user = $this->get('security.context')->getToken()->getUser();
-      if (!$position) {
-      return $this->showError('Event not found!');
-      } else {
-      if ($position->canBeEditByUser($user)) {
-      
-      $position->save();
-      return $this->redirect($this->generateUrl('event_view', array('id' => $id)));
-      }
-      }
-      }  */
-
-    /**
      * @Route("/event/add_position/{id}", name="position_add")
      */
     public function addPositionAction($id) {
@@ -322,5 +305,37 @@ class EventController extends Controller {
             }
         }
     }
+    
+    # TODO
+    /**
+     * @Route("/event/edit_position/{id}", name="position_edit")
+     */
+    public function editPositionAction($id) {
+        /* @var $event \FUBerlin\ProjectBundle\Model\Event */
+        $event = \FUBerlin\ProjectBundle\Model\EventQuery::create()->findOneById($id);
+        $user = $this->get('security.context')->getToken()->getUser();
+        if (!$event) {
+            return $this->showError('Event not found!');
+        } else {
+            if ($event->getBilled()) {
+                return $this->showError('Event is already billed!');
+            }
+            if (!$event->isMember($user)) {
+                return $this->showError('You are not a member of this event!');
+            }
+            $request = $this->getRequest();
+            if ($request->isMethod('POST')) {
 
+                $eventPosition = new \FUBerlin\ProjectBundle\Model\EventPosition();
+                $eventPosition->setEvent($event);
+                $eventPosition->setUser($user);
+                $form = $this->createForm(new \FUBerlin\ProjectBundle\Form\Type\EventPositionType(), $eventPosition);
+                $form->bind($this->getRequest());
+                $eventPosition->save();
+                return $this->redirect($this->generateUrl('event_view', array('id' => $id)));
+            }
+        }   
+      return $this->render(
+              'FUBerlinProjectBundle:Default:index.html.twig', array('form' => $form->createView(), 'position'=>$position));
+    }   
 }

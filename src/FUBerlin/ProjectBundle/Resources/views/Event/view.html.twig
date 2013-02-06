@@ -8,11 +8,11 @@
                 {{ event.title }} <small>{{ event.place }}</small>
                 
                 {% if event.billed %}
-                <a href="javascript:void(0);" class="btn btn-success pull-right disabled" style="margin-top: 5px;"><i class="icon-ok icon-white"></i> Event is billed</a>
+                <a href="javascript:void(0);" class="btn btn-success pull-right disabled" style="margin-top: 5px;"><i class="icon-ok icon-white"></i> {{'Event is billed'|trans}}</a>
                 {% elseif event.ownerUser == app.user %}
-                <a href="{{ path('event_bill', {'id' :event.id}) }}" class="btn btn-success pull-right" style="margin-top: 5px;"><i class="icon-ok icon-white"></i> Bill event</a>
+                <a href="{{ path('event_bill', {'id' :event.id}) }}" class="btn btn-success pull-right" style="margin-top: 5px;"><i class="icon-ok icon-white"></i> {{'Bill event'|trans}}</a>
                 {% elseif not is_member %}
-                <a href="{{path('event_join', {'id' :event.id})}}" class="btn btn-primary pull-right" style="margin-top: 5px;"><i class="icon-plus icon-white"></i> Join event</a>
+                <a href="{{path('event_join', {'id' :event.id})}}" class="btn btn-primary pull-right" style="margin-top: 5px;"><i class="icon-plus icon-white"></i> {{'Join event'|trans}}</a>
                 {% endif %}
             </h1>
         </div>
@@ -26,13 +26,13 @@
         {% if positions.count > 0 %}
 
         <div class="">
-            <legend>Positions <small>(total: {{event.eventPositionsTotal}} {% if is_member %}my: {{event.eventPositionsTotalForUser(app.user)}} {% endif %})</small></legend>
+            <legend>{{'Positions'|trans}}<small>(total: {{event.eventPositionsTotal}} {% if is_member %}my: {{event.eventPositionsTotalForUser(app.user)}} {% endif %})</small></legend>
             <table class="table table-striped">
                 <thead>
                     <tr>
-                        <th>Position</th>
-                        <th>Amount</th>
-                        <th>User</th>
+                        <th>{{'Position'|trans}}</th>
+                        <th>{{'Amount'|trans}}</th>
+                        <th>{{'User'|trans}}</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -48,14 +48,18 @@
                                 <td>{{position.user.username}}</td>
                                 <td>
                                     {% if position.canBeDeletedByUser(app.user) %}
-                                    <a class="close" href="{{path('position_delete', {'id' :position.id})}}">&times;</a>
+                                      <div style="float: right;">
+                                          <a href="{{path('position_delete', {'id' :position.id})}}"><i class="icon-trash"></i></a>
+                                       </div>
                                     {% endif %}
                                 </td>
-                                <!--{#<td>
-                                    {% if position.canBeEditByUser(app.user) %}
-                                    <a class="close" href="{{path('position_edit', {'id' :position.id})}}">Edit</a>
+                                <td>
+                                    {% if position.canBeEditedByUser(app.user) %}
+                                        <div style="float: right;">  
+                                            <a href="{{path('position_edit', {'id' :position.id})}}"><i class="icon-edit"></i></a>
+                                        </div>
                                     {% endif %}
-                                </td>#}-->
+                                </td>
                             </tr>
                     {% endfor %}
                 </tbody>
@@ -68,7 +72,7 @@
             
             <form action="{{ path('position_add', {'id' :event.id}) }}" method="post" {{ form_enctype(position_form) }}>
                 <fieldset>
-                    <legend>Add new position</legend>
+                    <legend>{{'Add new position'|trans}}</legend>
                     {{ form_widget(position_form) }}
                     <div class="form-actions">
                         <button type="submit" class="btn btn-primary">Add</button>
@@ -85,14 +89,14 @@
 
         {% if members %}
         <div class="well">
-            <legend>Members</legend>
+            <legend>{{'Members'|trans}}</legend>
             <table class="table table-striped">
                 <thead>
                     <tr>
-                        <th>Username</th>
-                        <th>First Name</th>
-                        <th>Last Name</th>
-                        <th>Balance</th>
+                        <th>{{'Username'|trans}}</th>
+                        <th>{{'First Name'|trans}}</th>
+                        <th>{{'Last Name'|trans}}</th>
+                        <th>{{'Balance'|trans}}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -114,14 +118,14 @@
         {% endif %}
 
         {% if comments %}
-            <legend>Comments</legend>
+            <legend>{{'Comments'|trans}}</legend>
         
             {% for comment in comments %}
             
                 <blockquote>
                     <p>{{comment.comment}}</p>
                     <small>
-                        {{comment.user.username}} wrote on {{comment.timestamp|date("d.m.Y H:m:s")}}
+                        {{comment.user.username}} {{'wrote on'|trans}} {{comment.timestamp|date("d.m.Y H:m:s")}}
                         
                         {% if comment.canBeDeletedByUser(app.user) %}
                             <a class="close" href="{{path('comment_delete', {'id' :comment.id})}}">&times;</a>
@@ -139,8 +143,8 @@
                 <div class="form-actions">
                     {{ form_widget(comment_form) }}
                     <div class="form-actions">
-                        <button class="btn btn-primary" type="submit">Add</button>
-                        <button class="btn" type="reset">Clear</button>
+                        <button class="btn btn-primary" type="submit">{{'Add'|trans}}</button>
+                        <button class="btn" type="reset">{{'Clear'|trans}}</button>
                     </div>
                 </div>
             </form>

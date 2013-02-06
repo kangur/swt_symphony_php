@@ -1,4 +1,4 @@
-# Login page - base.html
+#base.html
 Login: Anmelden
 Register: Registrieren
 My billed positions: Meine Posten
@@ -25,7 +25,38 @@ Closed events: Geschlossene Ereignisse
 Joined events: Verbindende  Ereignisse
 Add an event: Neues Ereignis hinzufügen
 
-#addEvent
+#addEvent.html
 Add Event: Neues Ereignis hinzufügen
 Add: Hinzufügen
 #Cancel: Abbrechen
+
+#view.html
+Event is billed: Das Ereignis ist abgerechnet
+Bill event: Das Ereignis abrechnen
+Join event: Das Ereignis beitreten 
+Positions: Posten
+Amount: Betrag
+User: Benutzer
+Add new position: Neuen Posten hinzufügen
+Members: Mitglieder
+Username: Benutzername
+First Name: Vorname
+Last Name: Nachname
+Balance: Balance
+Comments: Kommentare
+wrote on: hat geschrieben am
+#Add: Hinzufügen
+Clear: Löschen
+
+#edit.html
+Edit Event: Ereignis bearbeiten
+Save: Speichern
+#Cancel: Abbrechen  
+
+#billedposition.html
+My billed positions: Meine abgerechnete Ereignisse
+#Amount: Betrag
+Position is marked as paid: Der Posten ist als bezahlt markiert
+Position is not paid yet: Der Posten ist noch nicht bezahlt
+Mark as paid: Als bezahlt markieren
+You have no billed positions yet: Sie haben keine bezahlten Posten
