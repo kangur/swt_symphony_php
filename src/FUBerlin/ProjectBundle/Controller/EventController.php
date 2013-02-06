@@ -299,6 +299,8 @@ class EventController extends Controller {
             $request = $this->getRequest();
             if ($request->isMethod('POST')) {
 
+                // file upload
+                
                 $eventPosition = new \FUBerlin\ProjectBundle\Model\EventPosition();
                 $eventPosition->setEvent($event);
                 $eventPosition->setUser($user);
