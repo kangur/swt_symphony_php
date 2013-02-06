@@ -70,8 +70,28 @@
 </div>
 <div class="row">
     <div class="span8">
-        <h2>{{'Recent events'|trans}}:</h2>
+        <h2>{{'Statistic'|trans}}:</h2>
+        <p>
+        Number of users:
+        {{ stats.userCount }}
+        </p>
+        <p>
+         Number of events:
         {{ stats.eventCount }}
+         </p>
+         <p>
+         Number of billed events:
+        {{ stats.billedEventCount }}
+         </p>
+         <p>
+         Sum of positions:
+        {{ stats.positionSum }}
+         </p>
+         <p>
+         Number of comments:
+        {{ stats.commentCount }}
+         </p>
+         
     </div>
     <div class="span4">
         <form action="{{ path('login_check') }}" class="form-signin" method="post">

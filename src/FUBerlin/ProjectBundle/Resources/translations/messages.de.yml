@@ -5,7 +5,7 @@ My billed positions: Meine abgerechnete Posten
 Language: Sprache
 Logout: Abmelden
 Please sign in: Bitte melden Sie sich an
-Recent events: Aktuelle Ereignisse
+Statistic: Gesamtstatistik
 You have an event and many peoples with different expenses? So you definitively need Abrechner3000: Hast Du eine Veranstaltung und viele Freunde mit unterschiedlichen Kosten? Dann brauchst Du definitiv Abrechner3000
 
 # Registration
@@ -60,3 +60,6 @@ Position is marked as paid: Der Posten ist als bezahlt markiert
 Position is not paid yet: Der Posten ist noch nicht bezahlt
 Mark as paid: Als bezahlt markieren
 You have no billed positions yet: Sie haben keine bezahlten Posten
+
+#editPosition.html
+Edit Position: Posten bearbeiten
