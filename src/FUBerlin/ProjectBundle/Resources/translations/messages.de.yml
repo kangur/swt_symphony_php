@@ -1,7 +1,7 @@
 #base.html
 Login: Anmelden
 Register: Registrieren
-My billed positions: Meine Posten
+My billed positions: Meine abgerechnete Posten
 Language: Sprache
 Logout: Abmelden
 Please sign in: Bitte melden Sie sich an
@@ -54,7 +54,7 @@ Save: Speichern
 #Cancel: Abbrechen  
 
 #billedposition.html
-My billed positions: Meine abgerechnete Ereignisse
+#My billed positions: Meine abgerechnete Posten
 #Amount: Betrag
 Position is marked as paid: Der Posten ist als bezahlt markiert
 Position is not paid yet: Der Posten ist noch nicht bezahlt
