@@ -345,6 +345,6 @@ class EventController extends Controller {
             }
         }   
       return $this->render(
-              'FUBerlinProjectBundle:Default:index.html.twig', array('form' => $form->createView(), 'position'=>$position));
+              'FUBerlinProjectBundle:Event:editPosition.html.twig', array('form' => $form->createView(), 'position'=>$position));
     }   
 }

@@ -13,7 +13,7 @@ Username: Benutzername
 Password: Passwort
 First name: Vorname
 Last name: Nachname
-Cancel: Abbrechen
+#Cancel: Abbrechen
 #Register: Registrieren
 User has been created successfully: Benutzer wurde erfolgreich angelegt
 
@@ -39,7 +39,7 @@ Amount: Betrag
 User: Benutzer
 Add new position: Neuen Posten hinzufügen
 Members: Mitglieder
-Username: Benutzername
+Username: Benutzer
 First Name: Vorname
 Last Name: Nachname
 Balance: Balance
@@ -69,3 +69,4 @@ Number of events: Anzahl der Ereignisse
 Number of billed events: Anzahl der bezahlten Ereignisse
 Sum of positions: Summe der Posten
 Number of comments: Anzahl der Kommentare
+Title: Titel
