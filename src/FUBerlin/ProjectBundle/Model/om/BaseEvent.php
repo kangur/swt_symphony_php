@@ -5,11 +5,13 @@ namespace FUBerlin\ProjectBundle\Model\om;
 use \BaseObject;
 use \BasePeer;
 use \Criteria;
+use \DateTime;
 use \Exception;
 use \PDO;
 use \Persistent;
 use \Propel;
 use \PropelCollection;
+use \PropelDateTime;
 use \PropelException;
 use \PropelObjectCollection;
 use \PropelPDO;
@@ -71,6 +73,12 @@ abstract class BaseEvent extends BaseObject implements Persistent
      * @var        string
      */
     protected $place;
+
+    /**
+     * The value for the date field.
+     * @var        string
+     */
+    protected $date;
 
     /**
      * The value for the require_receipt field.
@@ -227,6 +235,43 @@ abstract class BaseEvent extends BaseObject implements Persistent
     }
 
     /**
+     * Get the [optionally formatted] temporal [date] column value.
+     *
+     *
+     * @param string $format The date/time format string (either date()-style or strftime()-style).
+     *				 If format is null, then the raw DateTime object will be returned.
+     * @return mixed Formatted date/time value as string or DateTime object (if format is null), null if column is null, and 0 if column value is 0000-00-00
+     * @throws PropelException - if unable to parse/validate the date/time value.
+     */
+    public function getDate($format = null)
+    {
+        if ($this->date === null) {
+            return null;
+        }
+
+        if ($this->date === '0000-00-00') {
+            // while technically this is not a default value of null,
+            // this seems to be closest in meaning.
+            return null;
+        } else {
+            try {
+                $dt = new DateTime($this->date);
+            } catch (Exception $x) {
+                throw new PropelException("Internally stored date/time/timestamp value could not be converted to DateTime: " . var_export($this->date, true), $x);
+            }
+        }
+
+        if ($format === null) {
+            // Because propel.useDateTimeClass is true, we return a DateTime object.
+            return $dt;
+        } elseif (strpos($format, '%') !== false) {
+            return strftime($format, $dt->format('U'));
+        } else {
+            return $dt->format($format);
+        }
+    }
+
+    /**
      * Get the [require_receipt] column value.
      *
      * @return boolean
@@ -335,6 +380,29 @@ abstract class BaseEvent extends BaseObject implements Persistent
     } // setPlace()
 
     /**
+     * Sets the value of [date] column to a normalized version of the date/time value specified.
+     *
+     * @param mixed $v string, integer (timestamp), or DateTime value.
+     *               Empty strings are treated as null.
+     * @return Event The current object (for fluent API support)
+     */
+    public function setDate($v)
+    {
+        $dt = PropelDateTime::newInstance($v, null, 'DateTime');
+        if ($this->date !== null || $dt !== null) {
+            $currentDateAsString = ($this->date !== null && $tmpDt = new DateTime($this->date)) ? $tmpDt->format('Y-m-d') : null;
+            $newDateAsString = $dt ? $dt->format('Y-m-d') : null;
+            if ($currentDateAsString !== $newDateAsString) {
+                $this->date = $newDateAsString;
+                $this->modifiedColumns[] = EventPeer::DATE;
+            }
+        } // if either are not null
+
+
+        return $this;
+    } // setDate()
+
+    /**
      * Sets the value of the [require_receipt] column.
      * Non-boolean arguments are converted using the following rules:
      *   * 1, '1', 'true',  'on',  and 'yes' are converted to boolean true
@@ -436,8 +504,9 @@ abstract class BaseEvent extends BaseObject implements Persistent
             $this->owner_id = ($row[$startcol + 1] !== null) ? (int) $row[$startcol + 1] : null;
             $this->title = ($row[$startcol + 2] !== null) ? (string) $row[$startcol + 2] : null;
             $this->place = ($row[$startcol + 3] !== null) ? (string) $row[$startcol + 3] : null;
-            $this->require_receipt = ($row[$startcol + 4] !== null) ? (boolean) $row[$startcol + 4] : null;
-            $this->billed = ($row[$startcol + 5] !== null) ? (boolean) $row[$startcol + 5] : null;
+            $this->date = ($row[$startcol + 4] !== null) ? (string) $row[$startcol + 4] : null;
+            $this->require_receipt = ($row[$startcol + 5] !== null) ? (boolean) $row[$startcol + 5] : null;
+            $this->billed = ($row[$startcol + 6] !== null) ? (boolean) $row[$startcol + 6] : null;
             $this->resetModified();
 
             $this->setNew(false);
@@ -446,7 +515,7 @@ abstract class BaseEvent extends BaseObject implements Persistent
                 $this->ensureConsistency();
             }
 
-            return $startcol + 6; // 6 = EventPeer::NUM_HYDRATE_COLUMNS.
+            return $startcol + 7; // 7 = EventPeer::NUM_HYDRATE_COLUMNS.
 
         } catch (Exception $e) {
             throw new PropelException("Error populating Event object", $e);
@@ -786,6 +855,9 @@ abstract class BaseEvent extends BaseObject implements Persistent
         if ($this->isColumnModified(EventPeer::PLACE)) {
             $modifiedColumns[':p' . $index++]  = '`PLACE`';
         }
+        if ($this->isColumnModified(EventPeer::DATE)) {
+            $modifiedColumns[':p' . $index++]  = '`DATE`';
+        }
         if ($this->isColumnModified(EventPeer::REQUIRE_RECEIPT)) {
             $modifiedColumns[':p' . $index++]  = '`REQUIRE_RECEIPT`';
         }
@@ -814,6 +886,9 @@ abstract class BaseEvent extends BaseObject implements Persistent
                         break;
                     case '`PLACE`':
                         $stmt->bindValue($identifier, $this->place, PDO::PARAM_STR);
+                        break;
+                    case '`DATE`':
+                        $stmt->bindValue($identifier, $this->date, PDO::PARAM_STR);
                         break;
                     case '`REQUIRE_RECEIPT`':
                         $stmt->bindValue($identifier, (int) $this->require_receipt, PDO::PARAM_INT);
@@ -1012,9 +1087,12 @@ abstract class BaseEvent extends BaseObject implements Persistent
                 return $this->getPlace();
                 break;
             case 4:
-                return $this->getRequireReceipt();
+                return $this->getDate();
                 break;
             case 5:
+                return $this->getRequireReceipt();
+                break;
+            case 6:
                 return $this->getBilled();
                 break;
             default:
@@ -1050,8 +1128,9 @@ abstract class BaseEvent extends BaseObject implements Persistent
             $keys[1] => $this->getOwnerId(),
             $keys[2] => $this->getTitle(),
             $keys[3] => $this->getPlace(),
-            $keys[4] => $this->getRequireReceipt(),
-            $keys[5] => $this->getBilled(),
+            $keys[4] => $this->getDate(),
+            $keys[5] => $this->getRequireReceipt(),
+            $keys[6] => $this->getBilled(),
         );
         if ($includeForeignObjects) {
             if (null !== $this->aOwnerUser) {
@@ -1116,9 +1195,12 @@ abstract class BaseEvent extends BaseObject implements Persistent
                 $this->setPlace($value);
                 break;
             case 4:
-                $this->setRequireReceipt($value);
+                $this->setDate($value);
                 break;
             case 5:
+                $this->setRequireReceipt($value);
+                break;
+            case 6:
                 $this->setBilled($value);
                 break;
         } // switch()
@@ -1149,8 +1231,9 @@ abstract class BaseEvent extends BaseObject implements Persistent
         if (array_key_exists($keys[1], $arr)) $this->setOwnerId($arr[$keys[1]]);
         if (array_key_exists($keys[2], $arr)) $this->setTitle($arr[$keys[2]]);
         if (array_key_exists($keys[3], $arr)) $this->setPlace($arr[$keys[3]]);
-        if (array_key_exists($keys[4], $arr)) $this->setRequireReceipt($arr[$keys[4]]);
-        if (array_key_exists($keys[5], $arr)) $this->setBilled($arr[$keys[5]]);
+        if (array_key_exists($keys[4], $arr)) $this->setDate($arr[$keys[4]]);
+        if (array_key_exists($keys[5], $arr)) $this->setRequireReceipt($arr[$keys[5]]);
+        if (array_key_exists($keys[6], $arr)) $this->setBilled($arr[$keys[6]]);
     }
 
     /**
@@ -1166,6 +1249,7 @@ abstract class BaseEvent extends BaseObject implements Persistent
         if ($this->isColumnModified(EventPeer::OWNER_ID)) $criteria->add(EventPeer::OWNER_ID, $this->owner_id);
         if ($this->isColumnModified(EventPeer::TITLE)) $criteria->add(EventPeer::TITLE, $this->title);
         if ($this->isColumnModified(EventPeer::PLACE)) $criteria->add(EventPeer::PLACE, $this->place);
+        if ($this->isColumnModified(EventPeer::DATE)) $criteria->add(EventPeer::DATE, $this->date);
         if ($this->isColumnModified(EventPeer::REQUIRE_RECEIPT)) $criteria->add(EventPeer::REQUIRE_RECEIPT, $this->require_receipt);
         if ($this->isColumnModified(EventPeer::BILLED)) $criteria->add(EventPeer::BILLED, $this->billed);
 
@@ -1234,6 +1318,7 @@ abstract class BaseEvent extends BaseObject implements Persistent
         $copyObj->setOwnerId($this->getOwnerId());
         $copyObj->setTitle($this->getTitle());
         $copyObj->setPlace($this->getPlace());
+        $copyObj->setDate($this->getDate());
         $copyObj->setRequireReceipt($this->getRequireReceipt());
         $copyObj->setBilled($this->getBilled());
 
@@ -2499,6 +2584,7 @@ abstract class BaseEvent extends BaseObject implements Persistent
         $this->owner_id = null;
         $this->title = null;
         $this->place = null;
+        $this->date = null;
         $this->require_receipt = null;
         $this->billed = null;
         $this->alreadyInSave = false;

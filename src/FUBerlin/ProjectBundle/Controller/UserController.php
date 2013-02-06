@@ -10,10 +10,11 @@ use \FUBerlin\ProjectBundle\Model\User;
 
 class UserController extends Controller {
 
-    public function getRequest() {
+    public function setContainer(\Symfony\Component\DependencyInjection\ContainerInterface $container = NULL)
+    {
+        parent::setContainer($container);
         $request = parent::getRequest();
         $request->setLocale($this->get('session')->get('_locale'));
-        return $request;
     }
 
     /**

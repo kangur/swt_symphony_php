@@ -26,6 +26,7 @@ use FUBerlin\ProjectBundle\Model\User;
  * @method EventQuery orderByOwnerId($order = Criteria::ASC) Order by the owner_id column
  * @method EventQuery orderByTitle($order = Criteria::ASC) Order by the title column
  * @method EventQuery orderByPlace($order = Criteria::ASC) Order by the place column
+ * @method EventQuery orderByDate($order = Criteria::ASC) Order by the date column
  * @method EventQuery orderByRequireReceipt($order = Criteria::ASC) Order by the require_receipt column
  * @method EventQuery orderByBilled($order = Criteria::ASC) Order by the billed column
  *
@@ -33,6 +34,7 @@ use FUBerlin\ProjectBundle\Model\User;
  * @method EventQuery groupByOwnerId() Group by the owner_id column
  * @method EventQuery groupByTitle() Group by the title column
  * @method EventQuery groupByPlace() Group by the place column
+ * @method EventQuery groupByDate() Group by the date column
  * @method EventQuery groupByRequireReceipt() Group by the require_receipt column
  * @method EventQuery groupByBilled() Group by the billed column
  *
@@ -67,6 +69,7 @@ use FUBerlin\ProjectBundle\Model\User;
  * @method Event findOneByOwnerId(int $owner_id) Return the first Event filtered by the owner_id column
  * @method Event findOneByTitle(string $title) Return the first Event filtered by the title column
  * @method Event findOneByPlace(string $place) Return the first Event filtered by the place column
+ * @method Event findOneByDate(string $date) Return the first Event filtered by the date column
  * @method Event findOneByRequireReceipt(boolean $require_receipt) Return the first Event filtered by the require_receipt column
  * @method Event findOneByBilled(boolean $billed) Return the first Event filtered by the billed column
  *
@@ -74,6 +77,7 @@ use FUBerlin\ProjectBundle\Model\User;
  * @method array findByOwnerId(int $owner_id) Return Event objects filtered by the owner_id column
  * @method array findByTitle(string $title) Return Event objects filtered by the title column
  * @method array findByPlace(string $place) Return Event objects filtered by the place column
+ * @method array findByDate(string $date) Return Event objects filtered by the date column
  * @method array findByRequireReceipt(boolean $require_receipt) Return Event objects filtered by the require_receipt column
  * @method array findByBilled(boolean $billed) Return Event objects filtered by the billed column
  */
@@ -163,7 +167,7 @@ abstract class BaseEventQuery extends ModelCriteria
      */
     protected function findPkSimple($key, $con)
     {
-        $sql = 'SELECT `ID`, `OWNER_ID`, `TITLE`, `PLACE`, `REQUIRE_RECEIPT`, `BILLED` FROM `event` WHERE `ID` = :p0';
+        $sql = 'SELECT `ID`, `OWNER_ID`, `TITLE`, `PLACE`, `DATE`, `REQUIRE_RECEIPT`, `BILLED` FROM `event` WHERE `ID` = :p0';
         try {
             $stmt = $con->prepare($sql);
             $stmt->bindValue(':p0', $key, PDO::PARAM_INT);
@@ -378,6 +382,49 @@ abstract class BaseEventQuery extends ModelCriteria
         }
 
         return $this->addUsingAlias(EventPeer::PLACE, $place, $comparison);
+    }
+
+    /**
+     * Filter the query on the date column
+     *
+     * Example usage:
+     * <code>
+     * $query->filterByDate('2011-03-14'); // WHERE date = '2011-03-14'
+     * $query->filterByDate('now'); // WHERE date = '2011-03-14'
+     * $query->filterByDate(array('max' => 'yesterday')); // WHERE date > '2011-03-13'
+     * </code>
+     *
+     * @param     mixed $date The value to use as filter.
+     *              Values can be integers (unix timestamps), DateTime objects, or strings.
+     *              Empty strings are treated as NULL.
+     *              Use scalar values for equality.
+     *              Use array values for in_array() equivalent.
+     *              Use associative array('min' => $minValue, 'max' => $maxValue) for intervals.
+     * @param     string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
+     *
+     * @return EventQuery The current query, for fluid interface
+     */
+    public function filterByDate($date = null, $comparison = null)
+    {
+        if (is_array($date)) {
+            $useMinMax = false;
+            if (isset($date['min'])) {
+                $this->addUsingAlias(EventPeer::DATE, $date['min'], Criteria::GREATER_EQUAL);
+                $useMinMax = true;
+            }
+            if (isset($date['max'])) {
+                $this->addUsingAlias(EventPeer::DATE, $date['max'], Criteria::LESS_EQUAL);
+                $useMinMax = true;
+            }
+            if ($useMinMax) {
+                return $this;
+            }
+            if (null === $comparison) {
+                $comparison = Criteria::IN;
+            }
+        }
+
+        return $this->addUsingAlias(EventPeer::DATE, $date, $comparison);
     }
 
     /**

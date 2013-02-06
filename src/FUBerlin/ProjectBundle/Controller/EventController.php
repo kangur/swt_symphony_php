@@ -11,10 +11,13 @@ use \FUBerlin\ProjectBundle\Model\Event;
 
 class EventController extends Controller {
 
-    public function getRequest() {
+
+   
+    public function setContainer(\Symfony\Component\DependencyInjection\ContainerInterface $container = NULL)
+    {
+        parent::setContainer($container);
         $request = parent::getRequest();
         $request->setLocale($this->get('session')->get('_locale'));
-        return $request;
     }
 
     private function showError($errorMessage) {
@@ -109,6 +112,7 @@ class EventController extends Controller {
         /* @var $event \FUBerlin\ProjectBundle\Model\Event */
         $event = \FUBerlin\ProjectBundle\Model\EventQuery::create()->findOneById($id);
         $user = $this->get('security.context')->getToken()->getUser();
+        //echo $this->getRequest()->getLocale();
         if (!$event) {
             return $this->showError('Event not found!');
         } else {
@@ -311,8 +315,11 @@ class EventController extends Controller {
      * @Route("/event/edit_position/{id}", name="position_edit")
      */
     public function editPositionAction($id) {
-        /* @var $event \FUBerlin\ProjectBundle\Model\Event */
-        $event = \FUBerlin\ProjectBundle\Model\EventQuery::create()->findOneById($id);
+        /* @var $position \FUBerlin\ProjectBundle\Model\EventPosition */
+        $position =\FUBerlin\ProjectBundle\Model\EventPositionQuery::create()->findOneById($id);
+       
+        $event = $position->getEvent();
+        $form = $this->createForm(new \FUBerlin\ProjectBundle\Form\Type\EventPositionType(), $position);
         $user = $this->get('security.context')->getToken()->getUser();
         if (!$event) {
             return $this->showError('Event not found!');
@@ -329,7 +336,7 @@ class EventController extends Controller {
                 $eventPosition = new \FUBerlin\ProjectBundle\Model\EventPosition();
                 $eventPosition->setEvent($event);
                 $eventPosition->setUser($user);
-                $form = $this->createForm(new \FUBerlin\ProjectBundle\Form\Type\EventPositionType(), $eventPosition);
+                
                 $form->bind($this->getRequest());
                 $eventPosition->save();
                 return $this->redirect($this->generateUrl('event_view', array('id' => $id)));

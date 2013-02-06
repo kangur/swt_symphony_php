@@ -34,13 +34,13 @@ abstract class BaseEventPeer
     const TM_CLASS = 'EventTableMap';
 
     /** The total number of columns. */
-    const NUM_COLUMNS = 6;
+    const NUM_COLUMNS = 7;
 
     /** The number of lazy-loaded columns. */
     const NUM_LAZY_LOAD_COLUMNS = 0;
 
     /** The number of columns to hydrate (NUM_COLUMNS - NUM_LAZY_LOAD_COLUMNS) */
-    const NUM_HYDRATE_COLUMNS = 6;
+    const NUM_HYDRATE_COLUMNS = 7;
 
     /** the column name for the ID field */
     const ID = 'event.ID';
@@ -53,6 +53,9 @@ abstract class BaseEventPeer
 
     /** the column name for the PLACE field */
     const PLACE = 'event.PLACE';
+
+    /** the column name for the DATE field */
+    const DATE = 'event.DATE';
 
     /** the column name for the REQUIRE_RECEIPT field */
     const REQUIRE_RECEIPT = 'event.REQUIRE_RECEIPT';
@@ -79,12 +82,12 @@ abstract class BaseEventPeer
      * e.g. EventPeer::$fieldNames[EventPeer::TYPE_PHPNAME][0] = 'Id'
      */
     protected static $fieldNames = array (
-        BasePeer::TYPE_PHPNAME => array ('Id', 'OwnerId', 'Title', 'Place', 'RequireReceipt', 'Billed', ),
-        BasePeer::TYPE_STUDLYPHPNAME => array ('id', 'ownerId', 'title', 'place', 'requireReceipt', 'billed', ),
-        BasePeer::TYPE_COLNAME => array (EventPeer::ID, EventPeer::OWNER_ID, EventPeer::TITLE, EventPeer::PLACE, EventPeer::REQUIRE_RECEIPT, EventPeer::BILLED, ),
-        BasePeer::TYPE_RAW_COLNAME => array ('ID', 'OWNER_ID', 'TITLE', 'PLACE', 'REQUIRE_RECEIPT', 'BILLED', ),
-        BasePeer::TYPE_FIELDNAME => array ('id', 'owner_id', 'title', 'place', 'require_receipt', 'billed', ),
-        BasePeer::TYPE_NUM => array (0, 1, 2, 3, 4, 5, )
+        BasePeer::TYPE_PHPNAME => array ('Id', 'OwnerId', 'Title', 'Place', 'Date', 'RequireReceipt', 'Billed', ),
+        BasePeer::TYPE_STUDLYPHPNAME => array ('id', 'ownerId', 'title', 'place', 'date', 'requireReceipt', 'billed', ),
+        BasePeer::TYPE_COLNAME => array (EventPeer::ID, EventPeer::OWNER_ID, EventPeer::TITLE, EventPeer::PLACE, EventPeer::DATE, EventPeer::REQUIRE_RECEIPT, EventPeer::BILLED, ),
+        BasePeer::TYPE_RAW_COLNAME => array ('ID', 'OWNER_ID', 'TITLE', 'PLACE', 'DATE', 'REQUIRE_RECEIPT', 'BILLED', ),
+        BasePeer::TYPE_FIELDNAME => array ('id', 'owner_id', 'title', 'place', 'date', 'require_receipt', 'billed', ),
+        BasePeer::TYPE_NUM => array (0, 1, 2, 3, 4, 5, 6, )
     );
 
     /**
@@ -94,12 +97,12 @@ abstract class BaseEventPeer
      * e.g. EventPeer::$fieldNames[BasePeer::TYPE_PHPNAME]['Id'] = 0
      */
     protected static $fieldKeys = array (
-        BasePeer::TYPE_PHPNAME => array ('Id' => 0, 'OwnerId' => 1, 'Title' => 2, 'Place' => 3, 'RequireReceipt' => 4, 'Billed' => 5, ),
-        BasePeer::TYPE_STUDLYPHPNAME => array ('id' => 0, 'ownerId' => 1, 'title' => 2, 'place' => 3, 'requireReceipt' => 4, 'billed' => 5, ),
-        BasePeer::TYPE_COLNAME => array (EventPeer::ID => 0, EventPeer::OWNER_ID => 1, EventPeer::TITLE => 2, EventPeer::PLACE => 3, EventPeer::REQUIRE_RECEIPT => 4, EventPeer::BILLED => 5, ),
-        BasePeer::TYPE_RAW_COLNAME => array ('ID' => 0, 'OWNER_ID' => 1, 'TITLE' => 2, 'PLACE' => 3, 'REQUIRE_RECEIPT' => 4, 'BILLED' => 5, ),
-        BasePeer::TYPE_FIELDNAME => array ('id' => 0, 'owner_id' => 1, 'title' => 2, 'place' => 3, 'require_receipt' => 4, 'billed' => 5, ),
-        BasePeer::TYPE_NUM => array (0, 1, 2, 3, 4, 5, )
+        BasePeer::TYPE_PHPNAME => array ('Id' => 0, 'OwnerId' => 1, 'Title' => 2, 'Place' => 3, 'Date' => 4, 'RequireReceipt' => 5, 'Billed' => 6, ),
+        BasePeer::TYPE_STUDLYPHPNAME => array ('id' => 0, 'ownerId' => 1, 'title' => 2, 'place' => 3, 'date' => 4, 'requireReceipt' => 5, 'billed' => 6, ),
+        BasePeer::TYPE_COLNAME => array (EventPeer::ID => 0, EventPeer::OWNER_ID => 1, EventPeer::TITLE => 2, EventPeer::PLACE => 3, EventPeer::DATE => 4, EventPeer::REQUIRE_RECEIPT => 5, EventPeer::BILLED => 6, ),
+        BasePeer::TYPE_RAW_COLNAME => array ('ID' => 0, 'OWNER_ID' => 1, 'TITLE' => 2, 'PLACE' => 3, 'DATE' => 4, 'REQUIRE_RECEIPT' => 5, 'BILLED' => 6, ),
+        BasePeer::TYPE_FIELDNAME => array ('id' => 0, 'owner_id' => 1, 'title' => 2, 'place' => 3, 'date' => 4, 'require_receipt' => 5, 'billed' => 6, ),
+        BasePeer::TYPE_NUM => array (0, 1, 2, 3, 4, 5, 6, )
     );
 
     /**
@@ -177,6 +180,7 @@ abstract class BaseEventPeer
             $criteria->addSelectColumn(EventPeer::OWNER_ID);
             $criteria->addSelectColumn(EventPeer::TITLE);
             $criteria->addSelectColumn(EventPeer::PLACE);
+            $criteria->addSelectColumn(EventPeer::DATE);
             $criteria->addSelectColumn(EventPeer::REQUIRE_RECEIPT);
             $criteria->addSelectColumn(EventPeer::BILLED);
         } else {
@@ -184,6 +188,7 @@ abstract class BaseEventPeer
             $criteria->addSelectColumn($alias . '.OWNER_ID');
             $criteria->addSelectColumn($alias . '.TITLE');
             $criteria->addSelectColumn($alias . '.PLACE');
+            $criteria->addSelectColumn($alias . '.DATE');
             $criteria->addSelectColumn($alias . '.REQUIRE_RECEIPT');
             $criteria->addSelectColumn($alias . '.BILLED');
         }

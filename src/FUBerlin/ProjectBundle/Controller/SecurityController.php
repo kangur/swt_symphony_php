@@ -10,6 +10,13 @@ use Symfony\Component\HttpFoundation\Response;
 
 class SecurityController extends Controller {
 
+    public function setContainer(\Symfony\Component\DependencyInjection\ContainerInterface $container = NULL)
+    {
+        parent::setContainer($container);
+        $request = parent::getRequest();
+        $request->setLocale($this->get('session')->get('_locale'));
+    }
+    
     /**
      * 
      * @Route("/login", name="login")

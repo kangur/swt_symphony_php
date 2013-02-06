@@ -62,7 +62,7 @@
 <div class="hero-unit">
     <h1>Abrechner3000!</h1>
     <p>
-        {{'You have an event and many peoples with different expenses? So you definitively need Abrechner3000'|trans}}!!!
+        {{'You have an event and many people with different expenses? So you definitively need Abrechner3000'|trans}}!!!
     </p>
     <p>
         <a href="{{ path('register') }}" class="btn btn-primary btn-large">{{'Register'|trans}}</a>
@@ -71,6 +71,7 @@
 <div class="row">
     <div class="span8">
         <h2>{{'Recent events'|trans}}:</h2>
+        {{ stats.eventCount }}
     </div>
     <div class="span4">
         <form action="{{ path('login_check') }}" class="form-signin" method="post">

@@ -33,6 +33,7 @@ CREATE TABLE `event`
     `owner_id` INTEGER,
     `title` VARCHAR(100),
     `place` VARCHAR(100),
+    `date` DATE,
     `require_receipt` TINYINT(1) DEFAULT 0,
     `billed` TINYINT(1) DEFAULT 0,
     PRIMARY KEY (`id`),

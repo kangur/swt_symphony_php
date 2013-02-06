@@ -15,6 +15,7 @@ class EventType extends AbstractType
     {        
         $builder->add('title');
         $builder->add('place');
+        $builder->add('date');
         $builder->add('requireReceipt','checkbox', array('required'=>false, 'label'=>'Receipt required?'));        
     }
 
@@ -28,6 +29,8 @@ class EventType extends AbstractType
         ));
     }
 
+    
+    
     /**
      * {@inheritdoc}
      */

@@ -21,6 +21,7 @@
         <column name="owner_id" type="integer"/>
         <column name="title" type="varchar" size="100" />
         <column name="place" type="varchar" size="100" />
+        <column name="date" type="date" />
         <column name="require_receipt" type="boolean" defaultValue="false" />
         <column name="billed" type="boolean" defaultValue="false" />
         <vendor type="mysql">
