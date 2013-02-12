@@ -11,10 +11,7 @@ use \FUBerlin\ProjectBundle\Model\Event;
 
 class EventController extends Controller {
 
-
-   
-    public function setContainer(\Symfony\Component\DependencyInjection\ContainerInterface $container = NULL)
-    {
+    public function setContainer(\Symfony\Component\DependencyInjection\ContainerInterface $container = NULL) {
         parent::setContainer($container);
         $request = parent::getRequest();
         $request->setLocale($this->get('session')->get('_locale'));
@@ -49,11 +46,11 @@ class EventController extends Controller {
         return $this->render(
                         'FUBerlinProjectBundle:Event:add.html.twig', array('form' => $form->createView()));
     }
-    
-      /**
+
+    /**
      * @Route("/event/edit_event/{id}", name="event_edit")
-    */
-      public function editEventAction($id) {
+     */
+    public function editEventAction($id) {
         $event = \FUBerlin\ProjectBundle\Model\EventQuery::create()->findOneById($id);
         $form = $this->createForm(new \FUBerlin\ProjectBundle\Form\Type\EventType(), $event);
         if ($this->getRequest()->isMethod('POST')) {
@@ -67,8 +64,8 @@ class EventController extends Controller {
             }
         }
         return $this->render(
-              'FUBerlinProjectBundle:Event:edit.html.twig', array('form' => $form->createView(), 'event'=>$event));
-    }         
+                        'FUBerlinProjectBundle:Event:edit.html.twig', array('form' => $form->createView(), 'event' => $event));
+    }
 
     /**
      * @Route("/my_billed_positions", name="event_billed_positions_view")
@@ -142,7 +139,7 @@ class EventController extends Controller {
                             'is_member' => false));
             }
         }
-    } 
+    }
 
     /**
      * @Route("/event/join/{id}", name="event_join")
@@ -300,26 +297,33 @@ class EventController extends Controller {
             if ($request->isMethod('POST')) {
 
                 // file upload
-                
+
                 $eventPosition = new \FUBerlin\ProjectBundle\Model\EventPosition();
                 $eventPosition->setEvent($event);
                 $eventPosition->setUser($user);
                 $form = $this->createForm(new \FUBerlin\ProjectBundle\Form\Type\EventPositionType(), $eventPosition);
                 $form->bind($request);
-                $eventPosition->save();
-                return $this->redirect($this->generateUrl('event_view', array('id' => $id)));
+                if ($form->isValid()) {
+                    $eventPosition->save();
+                    return $this->redirect($this->generateUrl('event_view', array('id' => $id)));
+                } else {
+                    return $this->showError($form->getErrorsAsString());
+                }
             }
         }
     }
-    
+
     # TODO
     /**
      * @Route("/event/edit_position/{id}", name="position_edit")
      */
-    public function editPositionAction($id) {
+
+    public
+
+    function editPositionAction($id) {
         /* @var $position \FUBerlin\ProjectBundle\Model\EventPosition */
-        $position =\FUBerlin\ProjectBundle\Model\EventPositionQuery::create()->findOneById($id);
-       
+        $position = \FUBerlin\ProjectBundle\Model\EventPositionQuery::create()->findOneById($id);
+
         $event = $position->getEvent();
         $form = $this->createForm(new \FUBerlin\ProjectBundle\Form\Type\EventPositionType(), $position);
         $user = $this->get('security.context')->getToken()->getUser();
@@ -338,13 +342,15 @@ class EventController extends Controller {
                 $eventPosition = new \FUBerlin\ProjectBundle\Model\EventPosition();
                 $eventPosition->setEvent($event);
                 $eventPosition->setUser($user);
-                
+
                 $form->bind($this->getRequest());
                 $eventPosition->save();
                 return $this->redirect($this->generateUrl('position_edit', array('id' => $id)));
             }
-        }   
-      return $this->render(
-              'FUBerlinProjectBundle:Event:editPosition.html.twig', array('form' => $form->createView(), 'position'=>$position));
-    }   
+        }
+        return $this->render(
+                        'FUBerlinProjectBundle:Event:editPosition.html.twig', array('form' => $form->createView(), 'position' => $position));
+    }
+
 }
+

@@ -1,0 +1,21 @@
+FUBerlin\ProjectBundle\Model\EventPosition:
+  getters:
+    title:
+      - NotBlank: ~
+      - MinLength: { limit: 3, message: "Your name must have at least {{ limit }} characters." }
+    amount:
+      - NotBlank: ~
+      - Type: { type: numeric }
+FUBerlin\ProjectBundle\Model\Event:
+  getters:
+    title:
+      - NotBlank: ~
+      - MinLength: { limit: 3, message: "Your name must have at least {{ limit }} characters." }
+    place:
+      - NotBlank: ~
+      - MinLength: { limit: 3, message: "Your name must have at least {{ limit }} characters." }
+FUBerlin\ProjectBundle\Model\EventComment:
+  getters:
+    comment:
+      - NotBlank: ~
+      - MinLength: { limit: 3, message: "Your name must have at least {{ limit }} characters." }
