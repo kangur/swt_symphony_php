@@ -13,7 +13,7 @@ class EventController extends Controller {
 
     public function setContainer(\Symfony\Component\DependencyInjection\ContainerInterface $container = NULL) {
         parent::setContainer($container);
-        $request = parent::getRequest();
+        $request = parent::getRequest();        
         $request->setLocale($this->get('session')->get('_locale'));
     }
 
